@@ -11,6 +11,9 @@ public record BinanceTROrder
     [JsonProperty("orderListId")]
     public long OrderListId { get; set; }
 
+    [JsonProperty("clientId")]
+    public string ClientOrderId { get; set; }
+    
     [JsonProperty("symbol")]
     public string Symbol { get; set; }
 

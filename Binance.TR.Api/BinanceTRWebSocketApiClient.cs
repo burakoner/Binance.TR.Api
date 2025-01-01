@@ -5,6 +5,8 @@
 /// </summary>
 public class BinanceTRWebSocketApiClient : WebSocketApiClient
 {
+    internal CultureInfo CI { get => CultureInfo.InvariantCulture; }
+
     /// <summary>
     /// Creates a new instance of BitMartWebSocketClient
     /// </summary>
@@ -41,74 +43,13 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
     protected override AuthenticationProvider CreateAuthenticationProvider(ApiCredentials credentials)
         => new BinanceTRAuthenticationProvider(credentials);
 
-    protected override async Task<CallResult<bool>> AuthenticateAsync(WebSocketConnection connection)
+    protected override Task<CallResult<bool>> AuthenticateAsync(WebSocketConnection connection)
     {
-        var result = false;
-
-        /*
-        if (this.AuthenticationProvider == null)
-            return new CallResult<bool>(new NoApiCredentialsError());
-
-        var timestamp = DateTime.UtcNow.ConvertToMilliseconds();
-        var key = this.AuthenticationProvider.Credentials.Key!.GetString();
-        var signtext = $"{timestamp}#{memo}#bitmart.WebSocket";
-        var signature = ((BitMartAuthenticationProvider)this.AuthenticationProvider).StreamApiSignature(signtext);
-
-        var request = new BitMartWebSocketRequest();
-
-        // Spot WebSocket
-        if (connection.Tag.Contains("ws-manager-compress.bitmart.com"))
-        {
-            request.Operation = "login";
-            request.Parameters = [key, timestamp.ToString(), signature];
-        }
-
-        // Futures WebSocket
-        else if (connection.Tag.Contains("openapi-ws-v2.bitmart.com"))
-        {
-            request.Action = "access";
-            request.Parameters = [key, timestamp.ToString(), signature, "web"];
-        }
-
-        // JSON
-        var json = JsonConvert.SerializeObject(request);
-
-        var result = false;
-        await connection.SendAndWaitAsync(request, ClientOptions.ResponseTimeout, data =>
-        {
-            // Check Point
-            if (data.Type != JTokenType.Object)
-                return false;
-
-            // Spot WebSocket
-            if (data["event"] != null)
-                result = (string)data["event"] == "login";
-
-            // Futures WebSocket
-            if (data["action"] != null && data["success"] != null)
-                result = (string)data["action"] == "access" && (bool)data["success"];
-
-            // Return
-            return result;
-        });
-        */
-
-        return result
-            ? new CallResult<bool>(result)
-            : new CallResult<bool>(new ServerError("Unspecified Error"));
+        throw new NotImplementedException();
     }
 
     protected override bool HandleQueryResponse<T>(WebSocketConnection connection, object request, JToken data, out CallResult<T> callResult)
     {
-        // Call Result
-        callResult = null;
-
-        /*
-        // Ping Request
-        if (request.ToString() == "ping" && data.ToString() == "pong")
-            return true;
-        */
-
         throw new NotImplementedException();
     }
 
@@ -150,34 +91,51 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         // Object Responses
         if (data.Type == JTokenType.Object && data["e"] != null && data["s"] != null)
         {
+            // Event Type
+            var eventType = (string)data["e"];
+
             // Trades
-            if ((string)data["e"] == "trade")
+            if (eventType == "trade")
             {
                 return bRequest.Parameters.Any(x => x.Contains((string)data["s"] + "@trade", StringComparison.InvariantCultureIgnoreCase));
             }
 
             // Aggregated Trades
-            if ((string)data["e"] == "aggTrade")
+            if (eventType == "aggTrade")
             {
                 return bRequest.Parameters.Any(x => x.Contains((string)data["s"] + "@aggTrade", StringComparison.InvariantCultureIgnoreCase));
             }
 
             // Klines
-            if ((string)data["e"] == "kline")
+            if (eventType == "kline")
             {
                 return bRequest.Parameters.Any(x => x.Contains((string)data["s"] + "@kline_", StringComparison.InvariantCultureIgnoreCase));
             }
 
             // Symbol Tickers
-            if ((string)data["e"] == "24hrMiniTicker")
+            if (eventType == "24hrMiniTicker")
             {
                 return bRequest.Parameters.Any(x => x.Contains((string)data["s"] + "@miniTicker", StringComparison.InvariantCultureIgnoreCase));
             }
 
             // Depth Diff
-            if ((string)data["e"] == "depthUpdate")
+            if (eventType == "depthUpdate")
             {
                 return bRequest.Parameters.Any(x => x.Contains((string)data["s"] + "@depth", StringComparison.InvariantCultureIgnoreCase));
+            }
+
+        }
+
+        // Object Responses
+        if (data.Type == JTokenType.Object && data["e"] != null)
+        {
+            // Event Type
+            var eventType = (string)data["e"];
+
+            // User Stream
+            if (eventType == "balanceUpdate" || eventType == "outboundAccountPosition" || eventType == "executionReport")
+            {
+                return bRequest.Parameters.Any(x => x.Length == 60 && !x.Contains("@"));
             }
         }
 
@@ -213,59 +171,31 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
     protected override async Task<bool> UnsubscribeAsync(WebSocketConnection connection, WebSocketSubscription subscription)
     {
         var bRequest = ((BinanceTRSocketRequest)subscription.Request!);
-        var request = new BinanceTRSocketRequest();
-        var result = false;
-
-        /*
-        // Spot WebSocket
-        if (connection.Tag.Contains("ws-manager-compress.bitmart.com"))
+        var request = new BinanceTRSocketRequest
         {
-            request.Operation = "unsubscribe";
-            request.Parameters = bRequest.Parameters;
-        }
+            Id = NextId(),
+            Method = "SUBSCRIBE",
+            Parameters = bRequest.Parameters,
+        };
 
-        // Futures WebSocket
-        else if (connection.Tag.Contains("openapi-ws-v2.bitmart.com"))
-        {
-            request.Action = "access";
-            request.Parameters = bRequest.Parameters;
-        }
-
-        // JSON
-        var json = JsonConvert.SerializeObject(request);
-
-        var result = false;
+        // Send Request
         await connection.SendAndWaitAsync(request, ClientOptions.ResponseTimeout, data =>
         {
             // Check Point
             if (data.Type != JTokenType.Object)
                 return false;
 
-            // Spot WebSocket
-            if (data["event"] != null && data["topic"] != null)
+            // Check Point
+            if (data["id"] != null && data["result"] != null)
             {
-                var evt = (string)data["event"];
-                var topic = (string)data["topic"];
-
-                return evt == "unsubscribe" && bRequest.Parameters.Contains(topic);
-            }
-
-            // Futures WebSocket
-            if (data["action"] != null && data["group"] != null && data["success"] != null)
-            {
-                var act = (string)data["action"];
-                var group = (string)data["group"];
-                var success = (bool)data["success"];
-
-                return act == "subscribe" && bRequest.Parameters.Contains(group) && success;
+                return (int)data["id"] == request.Id;
             }
 
             // Return
             return false;
         });
-        */
 
-        return result;
+        return false;
     }
     #endregion
 
@@ -298,7 +228,7 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         {
             Id = id,
             Method = "SUBSCRIBE",
-            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower())}@trade").ToArray()
+            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@trade").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
     }
 
@@ -320,7 +250,7 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         {
             Id = id,
             Method = "SUBSCRIBE",
-            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower())}@aggTrade").ToArray()
+            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@aggTrade").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
     }
 
@@ -342,7 +272,7 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         {
             Id = id,
             Method = "SUBSCRIBE",
-            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower())}@kline_{MapConverter.GetString(interval)}").ToArray()
+            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@kline_{MapConverter.GetString(interval)}").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
     }
 
@@ -364,7 +294,7 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         {
             Id = id,
             Method = "SUBSCRIBE",
-            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower())}@miniTicker").ToArray()
+            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@miniTicker").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
     }
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(Action<BinanceTRStreamTicker> handler, CancellationToken ct = default)
@@ -391,16 +321,16 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
     }
 
-    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToPartialDepthAsync(string symbol, int level, int speed, Action<BinanceTRStreamOrderBook> handler, CancellationToken ct = default)
+    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToPartialDepthAsync(string symbol, int level, int speed, Action<BinanceTRStreamOrderBookPartial> handler, CancellationToken ct = default)
         => await SubscribeToPartialDepthAsync([symbol], level, speed, handler, ct).ConfigureAwait(false);
-    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToPartialDepthAsync(IEnumerable<string> symbols, int level, int speed, Action<BinanceTRStreamOrderBook> handler, CancellationToken ct = default)
+    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToPartialDepthAsync(IEnumerable<string> symbols, int level, int speed, Action<BinanceTRStreamOrderBookPartial> handler, CancellationToken ct = default)
     {
         // Validations
         level.ValidateIntValues(nameof(level), 5, 10, 20);
         speed.ValidateIntValues(nameof(speed), 100, 1000);
 
         // Internal Handler
-        var internalHandler = new Action<WebSocketDataEvent<BinanceTRStreamOrderBook>>(data =>
+        var internalHandler = new Action<WebSocketDataEvent<BinanceTRStreamOrderBookPartial>>(data =>
         {
             if (data?.Data != null) handler(data.Data);
         });
@@ -413,19 +343,19 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         {
             Id = id,
             Method = "SUBSCRIBE",
-            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower())}@depth{level}@{speed}ms").ToArray()
+            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@depth{level}@{speed}ms").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
     }
 
-    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToDepthDiffAsync(string symbol, int speed, Action<BinanceTRStreamOrderBookUpdate> handler, CancellationToken ct = default)
+    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToDepthDiffAsync(string symbol, int speed, Action<BinanceTRStreamOrderBookDiff> handler, CancellationToken ct = default)
         => await SubscribeToDepthDiffAsync([symbol], speed, handler, ct).ConfigureAwait(false);
-    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToDepthDiffAsync(IEnumerable<string> symbols, int speed, Action<BinanceTRStreamOrderBookUpdate> handler, CancellationToken ct = default)
+    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToDepthDiffAsync(IEnumerable<string> symbols, int speed, Action<BinanceTRStreamOrderBookDiff> handler, CancellationToken ct = default)
     {
         // Validations
         speed.ValidateIntValues(nameof(speed), 100, 1000);
 
         // Internal Handler
-        var internalHandler = new Action<WebSocketDataEvent<BinanceTRStreamOrderBookUpdate>>(data =>
+        var internalHandler = new Action<WebSocketDataEvent<BinanceTRStreamOrderBookDiff>>(data =>
         {
             if (data?.Data != null) handler(data.Data);
         });
@@ -438,7 +368,51 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         {
             Id = id,
             Method = "SUBSCRIBE",
-            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower())}@depth@{speed}ms").ToArray()
+            Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@depth@{speed}ms").ToArray()
+        }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
+    }
+
+    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToUserStreamAsync(
+        string listenKey,
+        Action<BinanceTRStreamAccountUpdateBalance> onBalanceUpdate,
+        Action<BinanceTRStreamOrderUpdate> onOrderUpdate,
+        CancellationToken ct = default)
+    {
+        // Internal Handler
+        // var internalHandler = new Action<WebSocketDataEvent<BinanceTRStreamEvent>>(data =>
+        var internalHandler = new Action<WebSocketDataEvent<BinanceTRStreamEvent>>(data =>
+        {
+            if (data == null || data.Data == null)
+                return;
+
+            if (data.Data.Event == "outboundAccountPosition")
+            {
+                // Sample: {"e":"outboundAccountPosition","E":1735761723087,"u":1735761723087,"B":[{"a":"USDT","f":"34.62550600","l":"0.00000000"}]}
+                var accountUpdate = JsonConvert.DeserializeObject<BinanceTRStreamAccountUpdate>(data.Raw);
+                if (accountUpdate != null) foreach (var balance in accountUpdate.Balances) onBalanceUpdate(balance);
+            }
+            else if (data.Data.Event == "balanceUpdate")
+            {
+                // Sample: {"e":"balanceUpdate","E":1735760578674,"a":"USDT","d":"-0.01000000","T":1735760578674}
+                return;
+            }
+            else if (data.Data.Event == "executionReport")
+            {
+                // Sample: {"e":"executionReport","E":1735762034132,"s":"BTCUSDT","c":"911608173","S":"BUY","o":"LIMIT","f":"GTC","q":"0.00030000","p":"90000.00000000","P":"0.00000000","F":"0.00000000","g":-1,"C":"","x":"NEW","X":"NEW","r":"NONE","i":34599337295,"l":"0.00000000","z":"0.00000000","L":"0.00000000","n":"0","N":null,"T":1735762034131,"t":-1,"I":73945302308,"w":true,"m":false,"M":false,"O":1735762034131,"Z":"0.00000000","Y":"0.00000000","Q":"0.00000000","W":1735762034131,"V":"EXPIRE_MAKER"}
+                var orderUpdate = JsonConvert.DeserializeObject<BinanceTRStreamOrderUpdate>(data.Raw);
+                if (orderUpdate != null) onOrderUpdate(orderUpdate);
+            }
+        });
+
+        // Identifier
+        var id = NextId();
+
+        // Subscribe
+        return await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
+        {
+            Id = id,
+            Method = "SUBSCRIBE",
+            Parameters = [listenKey]
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
     }
 }

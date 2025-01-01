@@ -3,7 +3,7 @@
 /// <summary>
 /// Binance TR Stream Ticker
 /// </summary>
-public record BinanceTRStreamOrderBookUpdate : BinanceTRStreamEvent
+public record BinanceTRStreamOrderBookDiff : BinanceTRStreamEvent
 {
     [JsonProperty("s")]
     public string Symbol { get; set; }

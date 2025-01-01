@@ -3,7 +3,7 @@
 /// <summary>
 /// Binance TR Stream Ticker
 /// </summary>
-public record BinanceTRStreamOrderBook
+public record BinanceTRStreamOrderBookPartial
 {
     /// <summary>
     /// The ID of the last update

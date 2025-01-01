@@ -369,24 +369,24 @@ public class BinanceTRRestApiClient : RestApiClient
         return PayloadRequestAsync<BinanceTRAccount>(BuildUri(BinanceDataCenter.TR, "open/v1/account/spot"), HttpMethod.Get, ct, true);
     }
 
-    public async Task<RestCallResult<List<BinanceTRAccountAsset>>> GetBalancesAsync(CancellationToken ct = default)
+    public async Task<RestCallResult<List<BinanceTRAccountBalance>>> GetBalancesAsync(CancellationToken ct = default)
     {
         // Do Request
         var result = await PayloadRequestAsync<BinanceTRAccount>(BuildUri(BinanceDataCenter.TR, "open/v1/account/spot"), HttpMethod.Get, ct, true).ConfigureAwait(false);
-        if (!result) return result.AsError<List<BinanceTRAccountAsset>>(result.Error);
+        if (!result) return result.AsError<List<BinanceTRAccountBalance>>(result.Error);
 
         // Return
-        return result.As(result.Data.Assets);
+        return result.As(result.Data.Balances);
     }
 
-    public Task<RestCallResult<BinanceTRAccountAsset>> GetBalanceAsync(string asset, CancellationToken ct = default)
+    public Task<RestCallResult<BinanceTRAccountBalance>> GetBalanceAsync(string asset, CancellationToken ct = default)
     {
         // Parameters
         var parameters = new ParameterCollection();
         parameters.Add("asset", asset);
 
         // Do Request
-        return PayloadRequestAsync<BinanceTRAccountAsset>(BuildUri(BinanceDataCenter.TR, "open/v1/account/spot/asset"), HttpMethod.Get, ct, true);
+        return PayloadRequestAsync<BinanceTRAccountBalance>(BuildUri(BinanceDataCenter.TR, "open/v1/account/spot/asset"), HttpMethod.Get, ct, true);
     }
 
     public async Task<RestCallResult<List<BinanceTRAccountTrade>>> GetAccountTradesAsync(

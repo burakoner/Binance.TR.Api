@@ -28,7 +28,7 @@ internal class BinanceTRAuthenticationProvider : AuthenticationProvider
 
         // Parameter Position
         var options = (BinanceTRRestApiOptions)apiClient.ClientOptions;
-        var paramsInBody = (method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch || method == HttpMethod.Delete);
+        var paramsInBody = (method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Delete);
         if (paramsInBody)
         {
             body.Add("timestamp", timestamp);

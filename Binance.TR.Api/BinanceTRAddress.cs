@@ -43,11 +43,33 @@ public class BinanceTRAddress
     };
 }
 
+/// <summary>
+/// Binance Data Center
+/// </summary>
 public enum BinanceDataCenter
 {
+    /// <summary>
+    /// binance.me
+    /// </summary>
     ME,
+
+    /// <summary>
+    /// binance.tr
+    /// </summary>
     TR,
+
+    /// <summary>
+    /// 2meta.app
+    /// </summary>
     App,
+
+    /// <summary>
+    /// WebSocket Main
+    /// </summary>
     WebSocketMain,
+
+    /// <summary>
+    /// WebSocket Next
+    /// </summary>
     WebSocketNext,
 }

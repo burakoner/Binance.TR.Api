@@ -9,89 +9,89 @@ public enum KlineInterval
     /// 1m
     /// </summary>
     [Map("1m")]
-    OneMinute,
+    OneMinute = 60,
 
     /// <summary>
     /// 3m
     /// </summary>
     [Map("3m")]
-    ThreeMinutes,
+    ThreeMinutes = 180,
 
     /// <summary>
     /// 5m
     /// </summary>
     [Map("5m")]
-    FiveMinutes,
+    FiveMinutes = 300,
 
     /// <summary>
     /// 15m
     /// </summary>
     [Map("15m")]
-    FifteenMinutes,
+    FifteenMinutes = 900,
 
     /// <summary>
     /// 30m
     /// </summary>
     [Map("30m")]
-    ThirtyMinutes,
+    ThirtyMinutes = 1800,
 
     /// <summary>
     /// 1h
     /// </summary>
     [Map("1h")]
-    OneHour,
+    OneHour = 3600,
 
     /// <summary>
     /// 2h
     /// </summary>
     [Map("2h")]
-    TwoHour,
+    TwoHour = 7200,
 
     /// <summary>
     /// 4h
     /// </summary>
     [Map("4h")]
-    FourHour,
+    FourHour = 14400,
 
     /// <summary>
     /// 6h
     /// </summary>
     [Map("6h")]
-    SixHour,
+    SixHour = 21600,
 
     /// <summary>
     /// 8h
     /// </summary>
     [Map("8h")]
-    EightHour,
+    EightHour = 28800,
 
     /// <summary>
     /// 12h
     /// </summary>
     [Map("12h")]
-    TwelveHour,
+    TwelveHour = 43200,
 
     /// <summary>
     /// 1d
     /// </summary>
     [Map("1d")]
-    OneDay,
+    OneDay = 86400,
 
     /// <summary>
     /// 3d
     /// </summary>
     [Map("3d")]
-    ThreeDay,
+    ThreeDay = 259200,
 
     /// <summary>
     /// 1w
     /// </summary>
     [Map("1w")]
-    OneWeek,
+    OneWeek = 604800,
 
     /// <summary>
     /// 1M
     /// </summary>
     [Map("1M")]
-    OneMonth
+    OneMonth = 2592000
 }

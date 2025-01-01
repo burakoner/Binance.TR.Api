@@ -3,24 +3,25 @@ using Binance.TR.Api.Enums;
 using System;
 using System.Threading.Tasks;
 
-namespace BinanceTR.Examples;
+namespace Binance.TR.Api.Examples;
 
 internal class Program
 {
     static async Task Main(string[] args)
     {
-        /*
-        var api = new BinanceTRRestApiClient(new BinanceTRRestApiOptions
-        {
-            RawResponse = true,
-        });
+        #region Rest API Client Examples
+        var api = new BinanceTRRestApiClient();
 
+        // Public Endpoints
         var a01 = await api.GetTimeAsync();
         var a02 = await api.GetSymbolsAsync();
         var a03 = await api.GetOrderBookAsync("BTCTRY");
         var a04 = await api.GetTradesAsync("BTCTRY");
         var a05 = await api.GetAggregatedTradesAsync("BTCTRY");
         var a06 = await api.GetKlinesAsync("BTCTRY", KlineInterval.OneHour);
+
+        // Private Endpoints
+        api.SetApiCredentials("-----API-KEY-----", "-----API-SECRET-----");
         var a07 = await api.PlaceOrderAsync("BTC_TRY", OrderSide.Buy, OrderType.Limit, 0.16m, price: 3_000_000);
         var a08 = await api.GetOrderAsync(10542);
         var a09 = await api.CancelOrderAsync(10542);
@@ -37,18 +38,22 @@ internal class Program
         var a20 = await api.CreateListenKeyAsync();
         var a21 = await api.ExtendListenKeyAsync(a20.Data);
         var a22 = await api.CloseListenKeyAsync(a20.Data);
-        */
+        #endregion
 
-        var ws = new BinanceTRWebSocketApiClient(new BinanceTRWebSocketApiOptions
-        {
-            RawResponse = true,
-        });
+        #region WebSocket API Client Examples
+        var ws = new BinanceTRWebSocketApiClient();
 
-        /*
-        await ws.SubscribeToTradesAsync("BTCUSDT", (data) =>
+        var sub01 = await ws.SubscribeToTradesAsync("BTCUSDT", (data) =>
         {
             Console.WriteLine($"S:{data.Symbol} P:{data.Price} Q:{data.Quantity} ID:{data.TradeId} FID:{data.BuyerOrderId} LID:{data.SellerOrderId}");
         });
+
+        Console.WriteLine("SUBSCRIBED!..");
+        Console.ReadLine();
+
+        await ws.UnsubscribeAsync(sub01.Data);
+        Console.WriteLine("UN-SUBSCRIBED!..");
+        Console.ReadLine();
 
         await ws.SubscribeToAggregatedTradesAsync("BTCUSDT", (data) =>
         {
@@ -69,67 +74,22 @@ internal class Program
         {
             Console.WriteLine($"A:{data.Asks.Count} B:{data.Bids.Count} U:{data.LastUpdateId}");
         });
-        */
 
-        await ws.SubscribeToDepthDiffAsync("BTCTRY",  100, (data) =>
+        await ws.SubscribeToDepthDiffAsync("BTCTRY", 100, (data) =>
         {
             Console.WriteLine($"A:{data.Asks.Count} B:{data.Bids.Count} U:{data.LastUpdateId}");
         });
 
-        
-        Console.WriteLine("SUBSCRIBED!..");
+        await ws.SubscribeToUserStreamAsync(a20.Data, (data) =>
+        {
+            Console.WriteLine($"On Balance Update: Asset:{data.Asset} Free:{data.Free} Locked:{data.Locked}");
+        }, (data) =>
+        {
+            Console.WriteLine($"On Order Update: Symbol:{data.Symbol} OrderId:{data.OrderId} ClientOrderId:{data.ClientOrderId} Side:{data.Side} Type:{data.Type} TimeInForce:{data.TimeInForce} Quantity:{data.Quantity} Price:{data.Price} StopPrice:{data.StopPrice}");
+        });
+        #endregion
+
+        Console.WriteLine("DONE!..");
         Console.ReadLine();
-
-
-
-
-
-
-
-
-        var a = 0;
-
-        /*
-        var ws = new BinanceTRSocketClient(new BinanceTRWebSocketApiClientOptions
-        {
-            LogLevel = Microsoft.Extensions.Logging.LogLevel.Debug,
-            ApiCredentials = new CryptoExchange.Net.Authentication.ApiCredentials("81fA46302354762b4874E7F0a69dD05CAu9ENUGRZwRe2vgjaUjYMvwvVG6Gaif1", "da55362C6f0634ea18E430c199bD8cc7uScAMAy9L0SfNhTinOOBaUwQASuyl6ME")
-        });
-
-        /*
-        ws.SubscribeToAggregatedTradeUpdates("BTCTRY", (data) =>
-        {
-            if (data != null)
-            {
-                Console.WriteLine($"S:{data.Data.Symbol} P:{data.Data.Price} Q:{data.Data.Quantity} ID:{data.Data.AggregateTradeId} FID:{data.Data.FirstTradeId} LID:{data.Data.LastTradeId}");
-            }
-        });
-
-        ws.SubscribeToTradeUpdates("BTCTRY", (data) =>
-        {
-            if (data != null)
-            {
-                Console.WriteLine($"S:{data.Data.Symbol} P:{data.Data.Price} Q:{data.Data.Quantity}");
-            }
-        });
-
-        var ob = new BinanceTROrderBookClient("BTCTRY", new BinanceTROrderBookClientOptions
-        {
-            RestClient = cli,
-            SocketClient = ws,
-        });
-        var res = ob.StartAsync().Result;
-        Console.WriteLine("Başladı");
-        Console.ReadLine();
-
-        while (true)
-        {
-            Console.WriteLine($"S:{ob.Symbol} BP:{ob.BestBid.Price} BQ:{ob.BestBid.Quantity} AP:{ob.BestAsk.Price} AQ:{ob.BestAsk.Quantity}");
-            Thread.Sleep(1000);
-        }
-
-        Console.WriteLine("Done");
-        Console.ReadLine();
-        */
     }
 }

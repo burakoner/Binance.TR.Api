@@ -60,4 +60,19 @@ public static class BinanceTRHelpers
     {
         return Math.Floor(number * 100000000) / 100000000;
     }
+
+#if NETSTANDARD2_0
+    /// <summary>
+    /// Contains method for netstandard2.0.
+    /// Returns a value indicating whether a specified string occurs within this string, using the specified comparison rules.
+    /// </summary>
+    /// <param name="this">Source string</param>
+    /// <param name="value">The string to seek.</param>
+    /// <param name="comparisonType">One of the enumeration values that specifies the rules to use in the comparison.</param>
+    /// <returns>true if the value parameter occurs within this string, or if value is the empty string (""); otherwise, false.</returns>
+    public static bool Contains(this string @this, string value, StringComparison comparisonType)
+    {
+        return @this.IndexOf(value, comparisonType) >= 0;
+    }
+#endif
 }

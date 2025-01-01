@@ -30,13 +30,13 @@ public record BinanceTRAccount
     public bool Status { get; set; }
 
     [JsonProperty("accountAssets")]
-    public List<BinanceTRAccountAsset> Assets { get; set; }
+    public List<BinanceTRAccountBalance> Balances { get; set; }
 }
 
 /// <summary>
 /// Binance TR Account Asset Balance
 /// </summary>
-public record BinanceTRAccountAsset
+public record BinanceTRAccountBalance
 {
     [JsonProperty("asset")]
     public string Asset { get; set; }

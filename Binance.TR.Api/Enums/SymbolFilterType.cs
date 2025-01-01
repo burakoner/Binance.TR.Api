@@ -9,54 +9,54 @@ public enum SymbolFilterType
     /// Price filter
     /// </summary>
     [Map("PRICE_FILTER")]
-    Price,
+    Price = 1,
 
     /// <summary>
     /// Lot size filter
     /// </summary>
     [Map("LOT_SIZE")]
-    LotSize,
+    LotSize = 2,
 
     /// <summary>
     /// Max iceberg parts filter
     /// </summary>
     [Map("ICEBERG_PARTS")]
-    IcebergParts,
+    IcebergParts = 3,
 
     /// <summary>
     /// Market lot size filter
     /// </summary>
     [Map("MARKET_LOT_SIZE")]
-    MarketLotSize,
+    MarketLotSize = 4,
 
     /// <summary>
     /// TrailingDelta filter
     /// </summary>
     [Map("TRAILING_DELTA")]
-    TrailingDelta,
+    TrailingDelta = 5,
 
     /// <summary>
     /// PercentPriceBySide filter
     /// </summary>
     [Map("PERCENT_PRICE_BY_SIDE")]
-    PercentPriceBySide,
+    PercentPriceBySide = 6,
 
     /// <summary>
     /// Notional filter
     /// </summary>
     [Map("NOTIONAL")]
-    Notional,
+    Notional = 7,
 
     /// <summary>
     /// MaxNumberOrders filter
     /// </summary>
     [Map("MAX_NUM_ORDERS")]
-    MaxNumberOrders,
+    MaxNumberOrders = 8,
 
     /// <summary>
     /// Max algo orders filter
     /// </summary>
     [Map("MAX_NUM_ALGO_ORDERS")]
-    MaxNumberAlgorithmicOrders,
+    MaxNumberAlgorithmicOrders = 9,
 
 }
