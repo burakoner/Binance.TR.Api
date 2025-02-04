@@ -5,6 +5,7 @@ public class BinanceTRRestApiClient : RestApiClient
     internal BinanceTRRestApiOptions Options { get { return (BinanceTRRestApiOptions)this.ClientOptions; } }
     internal TimeSyncState TimeSyncState { get; } = new("BinanceTR Rest API");
     internal List<BinanceTRSymbol> Symbols { get; private set; } = [];
+    internal Dictionary<string, BinanceTRSymbol> NormalizedSymbols { get; private set; } = [];
     internal ILogger Logger { get => _logger; }
 
     public BinanceTRRestApiClient() : this(new BinanceTRRestApiOptions(), null) { }
@@ -118,22 +119,35 @@ public class BinanceTRRestApiClient : RestApiClient
         if (!result) return result.AsError<List<BinanceTRSymbol>>(result.Error);
 
         Symbols = result.Data.List.ToList();
-        Symbols.ForEach(s => s.Symbol = s.Symbol.Replace("-", "").Replace("_", ""));
+        NormalizedSymbols = Symbols.ToDictionary(s => GetNormalizedSymbol(s.Symbol), s => s);
 
         return result.As(result.Data.List);
     }
 
     internal async Task<BinanceTRSymbol> GetSymbolAsync(string symbol, CancellationToken ct = default)
     {
-        symbol = symbol.Replace("-", "").Replace("_", "");
         if (Symbols.Count == 0) await GetSymbolsAsync(ct).ConfigureAwait(false);
-        return Symbols.SingleOrDefault(s => s.Symbol == symbol);
+        if (!NormalizedSymbols.TryGetValue(GetNormalizedSymbol(symbol), out var item))
+            return null;
+
+        return item;
+    }
+
+    internal string GetNormalizedSymbol(string symbol)
+    {
+        return symbol.Replace("-", "").Replace("_", "");
+    }
+
+    internal async Task<string> GetExchangeInfoSymbol(string symbol, CancellationToken ct = default)
+    {
+        var sym = await GetSymbolAsync(symbol, ct);
+        return sym != null ? sym.Symbol : symbol;
     }
 
     public async Task<RestCallResult<BinanceTROrderBook>> GetOrderBookAsync(string symbol, int limit = 100, CancellationToken ct = default)
     {
-        // Symbol
-        symbol = symbol.Replace("-", "").Replace("_", "");
+        // Normalized Symbol
+        symbol = GetNormalizedSymbol(symbol);
 
         // Validations
         limit.ValidateIntValues(nameof(limit), 5, 10, 20, 50, 100, 500, 1000, 5000);
@@ -162,8 +176,8 @@ public class BinanceTRRestApiClient : RestApiClient
 
     public async Task<RestCallResult<List<BinanceTRTrade>>> GetTradesAsync(string symbol, long? fromId = null, int limit = 500, CancellationToken ct = default)
     {
-        // Symbol
-        symbol = symbol.Replace("-", "").Replace("_", "");
+        // Normalized Symbol
+        symbol = GetNormalizedSymbol(symbol);
 
         // Validations
         limit.ValidateIntBetween(nameof(limit), 1, 1000);
@@ -192,8 +206,8 @@ public class BinanceTRRestApiClient : RestApiClient
 
     public async Task<RestCallResult<List<BinanceTRAggregatedTrade>>> GetAggregatedTradesAsync(string symbol, long? fromId = null, DateTime? startTime = null, DateTime? endTime = null, int limit = 500, CancellationToken ct = default)
     {
-        // Symbol
-        symbol = symbol.Replace("-", "").Replace("_", "");
+        // Normalized Symbol
+        symbol = GetNormalizedSymbol(symbol);
 
         // Validations
         limit.ValidateIntBetween(nameof(limit), 1, 1000);
@@ -224,8 +238,8 @@ public class BinanceTRRestApiClient : RestApiClient
 
     public async Task<RestCallResult<List<BinanceTRKline>>> GetKlinesAsync(string symbol, KlineInterval interval, DateTime? startTime = null, DateTime? endTime = null, int limit = 500, CancellationToken ct = default)
     {
-        // Symbol
-        symbol = symbol.Replace("-", "").Replace("_", "");
+        // Normalized Symbol
+        symbol = GetNormalizedSymbol(symbol);
 
         // Validations
         limit.ValidateIntBetween(nameof(limit), 1, 1000);
@@ -254,7 +268,7 @@ public class BinanceTRRestApiClient : RestApiClient
         return result;
     }
 
-    public Task<RestCallResult<BinanceTROrderId>> PlaceOrderAsync(
+    public async Task<RestCallResult<BinanceTROrderId>> PlaceOrderAsync(
         string symbol,
         OrderSide side,
         OrderType type,
@@ -266,6 +280,9 @@ public class BinanceTRRestApiClient : RestApiClient
         string clientOrderId = null,
         CancellationToken ct = default)
     {
+        // ExchangeInfo Symbol
+        symbol = await GetExchangeInfoSymbol(symbol, ct);
+
         // Parameters
         var parameters = new ParameterCollection();
         parameters.Add("symbol", symbol);
@@ -279,7 +296,7 @@ public class BinanceTRRestApiClient : RestApiClient
         parameters.AddOptional("clientId", clientOrderId);
 
         // Do Request
-        return PayloadRequestAsync<BinanceTROrderId>(BuildUri(BinanceDataCenter.TR, "open/v1/orders"), HttpMethod.Post, ct, true, null, parameters);
+        return await PayloadRequestAsync<BinanceTROrderId>(BuildUri(BinanceDataCenter.TR, "open/v1/orders"), HttpMethod.Post, ct, true, null, parameters);
     }
 
     public Task<RestCallResult<BinanceTROrder>> GetOrderAsync(long orderId, CancellationToken ct = default)
@@ -313,6 +330,9 @@ public class BinanceTRRestApiClient : RestApiClient
         int limit = 500,
         CancellationToken ct = default)
     {
+        // ExchangeInfo Symbol
+        symbol = await GetExchangeInfoSymbol(symbol, ct);
+
         // Validations
         limit.ValidateIntBetween(nameof(limit), 1, 1000);
 
@@ -335,7 +355,7 @@ public class BinanceTRRestApiClient : RestApiClient
         return result.As(result.Data.List);
     }
 
-    public Task<RestCallResult<BinanceTROrderId>> PlaceOcoOrderAsync(
+    public async Task<RestCallResult<BinanceTROrderId>> PlaceOcoOrderAsync(
         string symbol,
         OrderSide side,
         decimal quantity,
@@ -347,6 +367,9 @@ public class BinanceTRRestApiClient : RestApiClient
         string limitClientOrderId = null,
         CancellationToken ct = default)
     {
+        // ExchangeInfo Symbol
+        symbol = await GetExchangeInfoSymbol(symbol, ct);
+
         // Parameters
         var parameters = new ParameterCollection();
         parameters.Add("symbol", symbol);
@@ -360,7 +383,7 @@ public class BinanceTRRestApiClient : RestApiClient
         parameters.AddOptional("limitClientId", limitClientOrderId);
 
         // Do Request
-        return PayloadRequestAsync<BinanceTROrderId>(BuildUri(BinanceDataCenter.TR, "open/v1/orders/oco"), HttpMethod.Post, ct, true, null, parameters);
+        return await PayloadRequestAsync<BinanceTROrderId>(BuildUri(BinanceDataCenter.TR, "open/v1/orders/oco"), HttpMethod.Post, ct, true, null, parameters);
     }
 
     public Task<RestCallResult<BinanceTRAccount>> GetAccountAsync(CancellationToken ct = default)
@@ -399,6 +422,9 @@ public class BinanceTRRestApiClient : RestApiClient
         int limit = 500,
         CancellationToken ct = default)
     {
+        // ExchangeInfo Symbol
+        symbol = await GetExchangeInfoSymbol(symbol, ct);
+
         // Validations
         limit.ValidateIntBetween(nameof(limit), 1, 1000);
 
