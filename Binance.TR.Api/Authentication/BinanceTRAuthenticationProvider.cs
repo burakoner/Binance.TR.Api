@@ -2,7 +2,7 @@
 
 internal class BinanceTRAuthenticationProvider : AuthenticationProvider
 {
-    public BinanceTRAuthenticationProvider(ApiCredentials credentials) : base(credentials)
+    public BinanceTRAuthenticationProvider(ApiCredentials credentials) : base(credentials ?? new ApiCredentials("", ""))
     {
         if (credentials is null || credentials.Secret is null)
             throw new ArgumentException("No valid API credentials provided. Key, Secret and PassPhrase needed.");
@@ -15,7 +15,7 @@ internal class BinanceTRAuthenticationProvider : AuthenticationProvider
             return;
 
         // Check Point
-        if (Credentials is null || Credentials.Key is null || Credentials.Secret is null)
+        if (Credentials is null || Credentials.Key is null || Credentials.Secret is null || string.IsNullOrEmpty(Credentials.Key.GetString()))
             throw new ArgumentException("No valid API credentials provided. Key/Secret/PassPhrase needed.");
 
         // Timestamp
@@ -34,7 +34,7 @@ internal class BinanceTRAuthenticationProvider : AuthenticationProvider
         {
             body.Add("timestamp", timestamp);
             body.Add("recvWindow", options.ReceiveWindow.TotalMilliseconds);
-        } 
+        }
         else
         {
             query.Add("timestamp", timestamp);
@@ -45,7 +45,6 @@ internal class BinanceTRAuthenticationProvider : AuthenticationProvider
         var totalParams = new Dictionary<string, object>();
         if (body.Count > 0) foreach (var param in body) totalParams.Add(param.Key, param.Value);
         if (query.Count > 0) foreach (var param in query) totalParams.Add(param.Key, param.Value);
-        var signtext = totalParams.ToFormData();
         var signature = SignHMACSHA256(totalParams.ToFormData(), SignatureOutputType.Hex).ToLower();
 
         // Headers
