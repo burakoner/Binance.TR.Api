@@ -8,10 +8,10 @@
 	<PropertyGroup>
 		<PackageId>Binance.TR.Api</PackageId>
 		<Authors>Burak Öner</Authors>
-		<Version>5.6.21</Version>
-		<FileVersion>5.6.21</FileVersion>
-		<PackageVersion>5.6.21</PackageVersion>
-		<AssemblyVersion>5.6.21</AssemblyVersion>
+		<Version>5.7.21</Version>
+		<FileVersion>5.7.21</FileVersion>
+		<PackageVersion>5.7.21</PackageVersion>
+		<AssemblyVersion>5.7.21</AssemblyVersion>
 		<Description>BinanceTR Api Wrapper. Up-to-date, most-complete, well-organized, well-documented, easy-to-use, multi-task and multi-thread compatible BinanceTR Cryptocurrency Exchange Rest and Websocket Api Wrapper</Description>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageTags>Binance;TR;BinanceTR;Binance TR;BNB;BTC;Api;Client;Rest;Web;Websocket;Socket;Wrapper;Crypto;Currency;Cryptocurrency;Exchange;Trade;Trading;Bitcoin;Spot;Margin;Futures;Derivates;Stock;Options;Swap;</PackageTags>
