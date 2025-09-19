@@ -2,6 +2,19 @@
 
 public class BinanceTRRestApiClient : RestApiClient
 {
+    /// <summary>
+    /// Use to override Default Rest Api Address
+    /// </summary>
+    public string MeRestApiAddress { get; set; } = string.Empty;
+    /// <summary>
+    /// Use to override Default Rest Api Address
+    /// </summary>
+    public string TrRestApiAddress { get; set; } = string.Empty;
+    /// <summary>
+    /// Use to override Default 2meta Rest Api Address
+    /// </summary>
+    public string AppRestApiAddress { get; set; } = string.Empty;
+
     internal BinanceTRRestApiOptions Options { get { return (BinanceTRRestApiOptions)this.ClientOptions; } }
     internal TimeSyncState TimeSyncState { get; } = new("BinanceTR Rest API");
     internal List<BinanceTRSymbol> Symbols { get; private set; } = [];
@@ -93,9 +106,9 @@ public class BinanceTRRestApiClient : RestApiClient
     protected Uri BuildUri(BinanceDataCenter datacenter, params string[] parameters)
     {
         var baseAddress = "";
-        if (datacenter == BinanceDataCenter.ME) baseAddress = BinanceTRAddress.Default.MeRestApiAddress;
-        if (datacenter == BinanceDataCenter.TR) baseAddress = BinanceTRAddress.Default.TrRestApiAddress;
-        if (datacenter == BinanceDataCenter.App) baseAddress = BinanceTRAddress.Default.AppRestApiAddress;
+        if (datacenter == BinanceDataCenter.ME) baseAddress = string.IsNullOrEmpty(MeRestApiAddress) ? BinanceTRAddress.Default.MeRestApiAddress : MeRestApiAddress;
+        if (datacenter == BinanceDataCenter.TR) baseAddress = string.IsNullOrEmpty(TrRestApiAddress) ? BinanceTRAddress.Default.TrRestApiAddress : TrRestApiAddress;
+        if (datacenter == BinanceDataCenter.App) baseAddress = string.IsNullOrEmpty(AppRestApiAddress) ? BinanceTRAddress.Default.AppRestApiAddress : AppRestApiAddress;
 
         return new Uri($"{baseAddress.TrimEnd('/')}/{string.Join("/", parameters).TrimStart('/')}");
     }

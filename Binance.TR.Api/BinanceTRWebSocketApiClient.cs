@@ -5,6 +5,21 @@
 /// </summary>
 public class BinanceTRWebSocketApiClient : WebSocketApiClient
 {
+    /// <summary>
+    /// ConnectionLost Event
+    /// </summary>
+    public event EventHandler ConnectionLost;
+
+    /// <summary>
+    /// Use to override WebSocket Main Address
+    /// </summary>
+    public string WebSocketMainAddress { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Use to override WebSocket Next Address
+    /// </summary>
+    public string WebSocketNextAddress { get; set; } = string.Empty;
+
     internal CultureInfo CI { get => CultureInfo.InvariantCulture; }
 
     /// <summary>
@@ -23,7 +38,7 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
     {
         ContinueOnQueryResponse = true;
         UnhandledMessageExpected = true;
-        KeepAliveInterval = TimeSpan.Zero;
+        KeepAliveInterval = TimeSpan.FromMinutes(1);
 
         //IgnoreHandlingList = ["pong"];
         //SendPeriodic("PING", TimeSpan.FromSeconds(5), conn => "ping");
@@ -35,13 +50,11 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
     /// </summary>
     /// <param name="key">API Key</param>
     /// <param name="secret">API Secret</param>
-    public void SetApiCredentials(string key, string secret)
-        => base.SetApiCredentials(new ApiCredentials(key, secret));
+    public void SetApiCredentials(string key, string secret) => base.SetApiCredentials(new ApiCredentials(key, secret));
     #endregion
 
     #region Overrided Methods
-    protected override AuthenticationProvider CreateAuthenticationProvider(ApiCredentials credentials)
-        => new BinanceTRAuthenticationProvider(credentials);
+    protected override AuthenticationProvider CreateAuthenticationProvider(ApiCredentials credentials) => new BinanceTRAuthenticationProvider(credentials);
 
     protected override Task<CallResult<bool>> AuthenticateAsync(WebSocketConnection connection)
     {
@@ -203,8 +216,8 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
     internal string BuildUrl(BinanceDataCenter datacenter, params string[] parameters)
     {
         var baseAddress = "";
-        if (datacenter == BinanceDataCenter.WebSocketMain) baseAddress = BinanceTRAddress.Default.WebSocketMainAddress;
-        if (datacenter == BinanceDataCenter.WebSocketNext) baseAddress = BinanceTRAddress.Default.WebSocketNextAddress;
+        if (datacenter == BinanceDataCenter.WebSocketMain) baseAddress = string.IsNullOrEmpty(WebSocketMainAddress) ? BinanceTRAddress.Default.WebSocketMainAddress : WebSocketMainAddress;
+        if (datacenter == BinanceDataCenter.WebSocketNext) baseAddress = string.IsNullOrEmpty(WebSocketNextAddress) ? BinanceTRAddress.Default.WebSocketNextAddress : WebSocketNextAddress;
 
         return $"{baseAddress.TrimEnd('/')}/{string.Join("/", parameters).TrimStart('/')}".Trim('/');
     }
@@ -224,12 +237,16 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         var id = NextId();
 
         // Subscribe
-        return await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
+        var subscription = await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
         {
             Id = id,
             Method = "SUBSCRIBE",
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@trade").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
+
+        if(ClientOptions.AutoReconnect)
+            subscription.Data.ConnectionLost += DataOnConnectionLost;
+        return subscription;
     }
 
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToAggregatedTradesAsync(string symbol, Action<BinanceTRStreamAggregatedTrade> handler, CancellationToken ct = default)
@@ -246,12 +263,16 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         var id = NextId();
 
         // Subscribe
-        return await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
+        var subscription = await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
         {
             Id = id,
             Method = "SUBSCRIBE",
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@aggTrade").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
+
+        if (ClientOptions.AutoReconnect)
+            subscription.Data.ConnectionLost += DataOnConnectionLost;
+        return subscription;
     }
 
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToKlinesAsync(string symbol, KlineInterval interval, Action<BinanceTRStreamKline> handler, CancellationToken ct = default)
@@ -268,12 +289,16 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         var id = NextId();
 
         // Subscribe
-        return await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
+        var subscription = await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
         {
             Id = id,
             Method = "SUBSCRIBE",
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@kline_{MapConverter.GetString(interval)}").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
+
+        if (ClientOptions.AutoReconnect)
+            subscription.Data.ConnectionLost += DataOnConnectionLost;
+        return subscription;
     }
 
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(string symbol, Action<BinanceTRStreamTicker> handler, CancellationToken ct = default)
@@ -290,12 +315,16 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         var id = NextId();
 
         // Subscribe
-        return await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
+        var subscription = await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
         {
             Id = id,
             Method = "SUBSCRIBE",
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@miniTicker").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
+
+        if (ClientOptions.AutoReconnect)
+            subscription.Data.ConnectionLost += DataOnConnectionLost;
+        return subscription;
     }
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(Action<BinanceTRStreamTicker> handler, CancellationToken ct = default)
     {
@@ -313,12 +342,16 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         var id = NextId();
 
         // Subscribe
-        return await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
+        var subscription = await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
         {
             Id = id,
             Method = "SUBSCRIBE",
             Parameters = ["!miniTicker@arr"]
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
+
+        if (ClientOptions.AutoReconnect)
+            subscription.Data.ConnectionLost += DataOnConnectionLost;
+        return subscription;
     }
 
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToPartialDepthAsync(string symbol, int level, int speed, Action<BinanceTRStreamOrderBookPartial> handler, CancellationToken ct = default)
@@ -339,12 +372,16 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         var id = NextId();
 
         // Subscribe
-        return await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
+        var subscription = await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
         {
             Id = id,
             Method = "SUBSCRIBE",
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@depth{level}@{speed}ms").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
+
+        if (ClientOptions.AutoReconnect)
+            subscription.Data.ConnectionLost += DataOnConnectionLost;
+        return subscription;
     }
 
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToDepthDiffAsync(string symbol, int speed, Action<BinanceTRStreamOrderBookDiff> handler, CancellationToken ct = default)
@@ -364,12 +401,16 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         var id = NextId();
 
         // Subscribe
-        return await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
+        var subscription = await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
         {
             Id = id,
             Method = "SUBSCRIBE",
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@depth@{speed}ms").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
+
+        if (ClientOptions.AutoReconnect)
+            subscription.Data.ConnectionLost += DataOnConnectionLost;
+        return subscription;
     }
 
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToUserStreamAsync(
@@ -380,26 +421,29 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
     {
         // Internal Handler
         // var internalHandler = new Action<WebSocketDataEvent<BinanceTRStreamEvent>>(data =>
-        var internalHandler = new Action<WebSocketDataEvent<BinanceTRStreamEvent>>(data =>
+        // Internal Handler using JToken instead of WebSocketDataEvent to avoid data.Raw null issue
+        var internalHandler = new Action<WebSocketDataEvent<JToken>>(data =>
         {
-            if (data == null || data.Data == null)
+            if (data?.Data == null)
                 return;
-
-            if (data.Data.Event == "outboundAccountPosition")
+            var eventType = data.Data["e"]?.ToString();
+            if (string.IsNullOrEmpty(eventType))
+                return;
+            if (eventType == "outboundAccountPosition")
             {
                 // Sample: {"e":"outboundAccountPosition","E":1735761723087,"u":1735761723087,"B":[{"a":"USDT","f":"34.62550600","l":"0.00000000"}]}
-                var accountUpdate = JsonConvert.DeserializeObject<BinanceTRStreamAccountUpdate>(data.Raw);
+                var accountUpdate = data.Data.ToObject<BinanceTRStreamAccountUpdate>();
                 if (accountUpdate != null) foreach (var balance in accountUpdate.Balances) onBalanceUpdate(balance);
             }
-            else if (data.Data.Event == "balanceUpdate")
+            else if (eventType == "balanceUpdate")
             {
                 // Sample: {"e":"balanceUpdate","E":1735760578674,"a":"USDT","d":"-0.01000000","T":1735760578674}
                 return;
             }
-            else if (data.Data.Event == "executionReport")
+            else if (eventType == "executionReport")
             {
                 // Sample: {"e":"executionReport","E":1735762034132,"s":"BTCUSDT","c":"911608173","S":"BUY","o":"LIMIT","f":"GTC","q":"0.00030000","p":"90000.00000000","P":"0.00000000","F":"0.00000000","g":-1,"C":"","x":"NEW","X":"NEW","r":"NONE","i":34599337295,"l":"0.00000000","z":"0.00000000","L":"0.00000000","n":"0","N":null,"T":1735762034131,"t":-1,"I":73945302308,"w":true,"m":false,"M":false,"O":1735762034131,"Z":"0.00000000","Y":"0.00000000","Q":"0.00000000","W":1735762034131,"V":"EXPIRE_MAKER"}
-                var orderUpdate = JsonConvert.DeserializeObject<BinanceTRStreamOrderUpdate>(data.Raw);
+                var orderUpdate = data.Data.ToObject<BinanceTRStreamOrderUpdate>();
                 if (orderUpdate != null) onOrderUpdate(orderUpdate);
             }
         });
@@ -408,11 +452,20 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         var id = NextId();
 
         // Subscribe
-        return await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
+        var subscription = await SubscribeAsync(BuildUrl(BinanceDataCenter.WebSocketMain), new BinanceTRSocketRequest
         {
             Id = id,
             Method = "SUBSCRIBE",
             Parameters = [listenKey]
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
+
+        if (ClientOptions.AutoReconnect)
+            subscription.Data.ConnectionLost += DataOnConnectionLost;
+        return subscription;
+    }
+
+    private void DataOnConnectionLost()
+    {
+        ConnectionLost?.Invoke(this, EventArgs.Empty);
     }
 }

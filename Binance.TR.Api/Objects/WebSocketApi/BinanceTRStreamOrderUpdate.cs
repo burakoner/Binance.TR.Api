@@ -14,14 +14,20 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     /// <summary>
     /// The id of the order as assigned by Binance
     /// </summary>
-    [JsonProperty("i")]
-    public long OrderId { get; set; }
+    [JsonProperty("c")]
+    public string OrderId { get; set; }
+
+    ///// <summary>
+    ///// The new client order id
+    ///// </summary>
+    //[JsonProperty("c")]
+    //public string ClientOrderId { get; set; }
 
     /// <summary>
     /// The new client order id
     /// </summary>
-    [JsonProperty("c")]
-    public string ClientOrderId { get; set; }
+    [JsonProperty("i")]
+    public string BinanceOrderId { get; set; }
 
     /// <summary>
     /// The side of the order
@@ -130,6 +136,12 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     /// </summary>
     [JsonProperty("t")]
     public long TradeId { get; set; }
+
+    /// <summary>
+    /// The ignore id
+    /// </summary>
+    [JsonProperty("I")]
+    public long IgnoreId { get; set; }
 
     /// <summary>
     /// Is working

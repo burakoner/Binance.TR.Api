@@ -46,4 +46,13 @@ public record BinanceTROrder
 
     [JsonProperty("createTime"), JsonConverter(typeof(DateTimeConverter))]
     public DateTime CreateTime { get; set; }
+
+    [JsonProperty("timeInForce"), JsonConverter(typeof(MapConverter))]
+    public TimeInForce TimeInForce { get; set; }
+
+    [JsonProperty("stopPrice")]
+    public decimal? StopPrice { get; set; }
+
+    [JsonProperty("icebergQty")]
+    public decimal? IcebergQty { get; set; }
 }
