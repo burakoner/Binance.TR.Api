@@ -12,24 +12,6 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     public string Symbol { get; set; }
 
     /// <summary>
-    /// The id of the order as assigned by Binance
-    /// </summary>
-    [JsonProperty("c")]
-    public string OrderId { get; set; }
-
-    ///// <summary>
-    ///// The new client order id
-    ///// </summary>
-    //[JsonProperty("c")]
-    //public string ClientOrderId { get; set; }
-
-    /// <summary>
-    /// The new client order id
-    /// </summary>
-    [JsonProperty("i")]
-    public string BinanceOrderId { get; set; }
-
-    /// <summary>
     /// The side of the order
     /// </summary>
     [JsonProperty("S"), JsonConverter(typeof(MapConverter))]
@@ -71,11 +53,14 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     [JsonProperty("F")]
     public decimal IcebergQuantity { get; set; }
 
+    //[JsonProperty("g")]
+    //public long Ignore { get; set; }
+
     /// <summary>
-    /// The original client order id
+    /// The id of the order as assigned by Binance
     /// </summary>
     [JsonProperty("C")]
-    public string OriginalClientOrderId { get; set; }
+    public long? OrderId { get; set; }
 
     /// <summary>
     /// The execution type
@@ -94,6 +79,12 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     /// </summary>
     [JsonProperty("r"), JsonConverter(typeof(MapConverter))]
     public OrderRejectReason RejectReason { get; set; }
+
+    /// <summary>
+    /// B-Order Id
+    /// </summary>
+    [JsonProperty("i")]
+    public long? BinanceOrderId { get; set; }
 
     /// <summary>
     /// The quantity of the last filled trade of this order
@@ -137,11 +128,8 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     [JsonProperty("t")]
     public long TradeId { get; set; }
 
-    /// <summary>
-    /// The ignore id
-    /// </summary>
-    [JsonProperty("I")]
-    public long IgnoreId { get; set; }
+    //[JsonProperty("I")]
+    //public long Ignore { get; set; }
 
     /// <summary>
     /// Is working
@@ -154,6 +142,9 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     /// </summary>
     [JsonProperty("m")]
     public bool BuyerIsMaker { get; set; }
+
+    //[JsonProperty("M")]
+    //public bool Ignore { get; set; }
 
     /// <summary>
     /// Time the order was created
@@ -168,16 +159,16 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     public decimal QuoteQuantityFilled { get; set; }
 
     /// <summary>
-    /// Quote order quantity
-    /// </summary>
-    [JsonProperty("Q")]
-    public decimal QuoteQuantity { get; set; }
-
-    /// <summary>
     /// Last quote asset transacted quantity (i.e. LastPrice * LastQuantity)
     /// </summary>
     [JsonProperty("Y")]
-    public decimal LastQuoteQuantity { get; set; }
+    public decimal LastQuoteQuantityFilled { get; set; }
+
+    /// <summary>
+    /// Quote order quantity (???)
+    /// </summary>
+    [JsonProperty("Q")]
+    public decimal QuoteQuantity { get; set; }
 
     /// <summary>
     /// Working time; when it entered the order book

@@ -8,12 +8,12 @@ public enum OrderSide
     /// <summary>
     /// Buy
     /// </summary>
-    [Map("0")]
+    [Map("0", "BUY")]
     Buy = 0,
 
     /// <summary>
     /// Sell
     /// </summary>
-    [Map("1")]
+    [Map("1", "SELL")]
     Sell = 1,
 }

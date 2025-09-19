@@ -1,13 +1,7 @@
 ﻿namespace Binance.TR.Api.Authentication;
 
-internal class BinanceTRAuthenticationProvider : AuthenticationProvider
+internal class BinanceTRAuthenticationProvider(ApiCredentials credentials) : AuthenticationProvider(credentials ?? new ApiCredentials("", ""))
 {
-    public BinanceTRAuthenticationProvider(ApiCredentials credentials) : base(credentials ?? new ApiCredentials("", ""))
-    {
-        //if (credentials is null || credentials.Secret is null)
-        //    throw new ArgumentException("No valid API credentials provided. Key, Secret and PassPhrase needed.");
-    }
-
     public override void AuthenticateRestApi(RestApiClient apiClient, Uri uri, HttpMethod method, bool signed, ArraySerialization serialization, SortedDictionary<string, object> query, SortedDictionary<string, object> body, string bodyContent, SortedDictionary<string, string> headers)
     {
         // Check Point

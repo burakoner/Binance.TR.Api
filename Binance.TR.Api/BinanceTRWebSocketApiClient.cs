@@ -187,7 +187,7 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         var request = new BinanceTRSocketRequest
         {
             Id = NextId(),
-            Method = "SUBSCRIBE",
+            Method = "UNSUBSCRIBE",
             Parameters = bRequest.Parameters,
         };
 
@@ -244,8 +244,11 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@trade").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
 
-        if(ClientOptions.AutoReconnect)
+        // Connection Lost Event
+        if (ClientOptions.AutoReconnect)
             subscription.Data.ConnectionLost += DataOnConnectionLost;
+
+        // Return
         return subscription;
     }
 
@@ -270,8 +273,11 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@aggTrade").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
 
+        // Connection Lost Event
         if (ClientOptions.AutoReconnect)
             subscription.Data.ConnectionLost += DataOnConnectionLost;
+
+        // Return
         return subscription;
     }
 
@@ -296,8 +302,11 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@kline_{MapConverter.GetString(interval)}").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
 
+        // Connection Lost Event
         if (ClientOptions.AutoReconnect)
             subscription.Data.ConnectionLost += DataOnConnectionLost;
+
+        // Return
         return subscription;
     }
 
@@ -322,8 +331,11 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@miniTicker").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
 
+        // Connection Lost Event
         if (ClientOptions.AutoReconnect)
             subscription.Data.ConnectionLost += DataOnConnectionLost;
+
+        // Return
         return subscription;
     }
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(Action<BinanceTRStreamTicker> handler, CancellationToken ct = default)
@@ -349,8 +361,11 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
             Parameters = ["!miniTicker@arr"]
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
 
+        // Connection Lost Event
         if (ClientOptions.AutoReconnect)
             subscription.Data.ConnectionLost += DataOnConnectionLost;
+
+        // Return
         return subscription;
     }
 
@@ -379,8 +394,11 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@depth{level}@{speed}ms").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
 
+        // Connection Lost Event
         if (ClientOptions.AutoReconnect)
             subscription.Data.ConnectionLost += DataOnConnectionLost;
+
+        // Return
         return subscription;
     }
 
@@ -408,8 +426,11 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
             Parameters = symbols.Select(x => $"{(x.Replace("-", "").Replace("_", "").ToLower(CI))}@depth@{speed}ms").ToArray()
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
 
+        // Connection Lost Event
         if (ClientOptions.AutoReconnect)
             subscription.Data.ConnectionLost += DataOnConnectionLost;
+
+        // Return
         return subscription;
     }
 
@@ -424,11 +445,10 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         // Internal Handler using JToken instead of WebSocketDataEvent to avoid data.Raw null issue
         var internalHandler = new Action<WebSocketDataEvent<JToken>>(data =>
         {
-            if (data?.Data == null)
-                return;
+            if (data?.Data == null) return;
             var eventType = data.Data["e"]?.ToString();
-            if (string.IsNullOrEmpty(eventType))
-                return;
+            if (string.IsNullOrEmpty(eventType)) return;
+
             if (eventType == "outboundAccountPosition")
             {
                 // Sample: {"e":"outboundAccountPosition","E":1735761723087,"u":1735761723087,"B":[{"a":"USDT","f":"34.62550600","l":"0.00000000"}]}
@@ -459,8 +479,11 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
             Parameters = [listenKey]
         }, id.ToString(), false, internalHandler, ct).ConfigureAwait(false);
 
+        // Connection Lost Event
         if (ClientOptions.AutoReconnect)
             subscription.Data.ConnectionLost += DataOnConnectionLost;
+
+        // Return
         return subscription;
     }
 

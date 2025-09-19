@@ -8,23 +8,20 @@ public record BinanceTROrder
     [JsonProperty("orderId")]
     public long OrderId { get; set; }
 
-    [JsonProperty("orderListId")]
-    public long OrderListId { get; set; }
-
     [JsonProperty("clientId")]
     public string ClientOrderId { get; set; }
-    
+
     [JsonProperty("symbol")]
     public string Symbol { get; set; }
+
+    [JsonProperty("symbolType")]
+    public SymbolType SymbolType { get; set; }
 
     [JsonProperty("side")]
     public OrderSide Side { get; set; }
 
     [JsonProperty("type")]
     public OrderType Type { get; set; }
-
-    [JsonProperty("status")]
-    public OrderStatus Status { get; set; }
 
     [JsonProperty("price")]
     public decimal? Price { get; set; }
@@ -35,17 +32,14 @@ public record BinanceTROrder
     [JsonProperty("origQuoteQty")]
     public decimal? QuoteQuantity { get; set; }
 
-    [JsonProperty("executedPrice")]
-    public decimal? ExecutedPrice { get; set; }
-
     [JsonProperty("executedQty")]
     public decimal? ExecutedQuantity { get; set; }
 
+    [JsonProperty("executedPrice")]
+    public decimal? ExecutedPrice { get; set; }
+
     [JsonProperty("executedQuoteQty")]
     public decimal? ExecutedQuoteQuantity { get; set; }
-
-    [JsonProperty("createTime"), JsonConverter(typeof(DateTimeConverter))]
-    public DateTime CreateTime { get; set; }
 
     [JsonProperty("timeInForce"), JsonConverter(typeof(MapConverter))]
     public TimeInForce TimeInForce { get; set; }
@@ -55,4 +49,19 @@ public record BinanceTROrder
 
     [JsonProperty("icebergQty")]
     public decimal? IcebergQty { get; set; }
+
+    [JsonProperty("status")]
+    public OrderStatus Status { get; set; }
+
+    [JsonProperty("isWorking"), JsonConverter(typeof(BooleanConverter))]
+    public bool IsWorking { get; set; }
+
+    [JsonProperty("createTime"), JsonConverter(typeof(DateTimeConverter))]
+    public DateTime CreateTime { get; set; }
+
+    [JsonProperty("borderId")]
+    public long? BinanceOrderId { get; set; }
+
+    [JsonProperty("borderListId")]
+    public long? BinanceOrderListId { get; set; }
 }

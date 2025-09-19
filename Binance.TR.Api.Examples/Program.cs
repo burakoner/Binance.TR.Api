@@ -26,18 +26,19 @@ internal class Program
         var a08 = await api.GetOrderAsync(10542);
         var a09 = await api.CancelOrderAsync(10542);
         var a10 = await api.GetOrdersAsync("BTC_TRY");
-        var a11 = await api.PlaceOcoOrderAsync("BTC_TRY", OrderSide.Buy, 0.16m, 3_000_000m, 3_100_000m, 3_110_000m);
-        var a12 = await api.GetAccountAsync();
-        var a13 = await api.GetBalancesAsync();
-        var a14 = await api.GetBalanceAsync("BTC");
-        var a15 = await api.GetAccountTradesAsync("BTC_TRY");
-        var a16 = await api.WithdrawAsync("BTC", 0.1m, "----ADDRESS-----");
-        var a17 = await api.GetWithdrawalsAsync();
-        var a18 = await api.GetDepositsAsync();
-        var a19 = await api.GetDepositAddressAsync();
-        var a20 = await api.CreateListenKeyAsync();
-        var a21 = await api.ExtendListenKeyAsync(a20.Data);
-        var a22 = await api.CloseListenKeyAsync(a20.Data);
+        var a11 = await api.GetOpenOrdersAsync();
+        var a12 = await api.PlaceOcoOrderAsync("BTC_TRY", OrderSide.Buy, 0.16m, 3_000_000m, 3_100_000m, 3_110_000m);
+        var a13 = await api.GetAccountAsync();
+        var a14 = await api.GetBalancesAsync();
+        var a15 = await api.GetBalanceAsync("BTC");
+        var a16 = await api.GetAccountTradesAsync("BTC_TRY");
+        var a17 = await api.WithdrawAsync("BTC", 0.1m, "----ADDRESS-----");
+        var a18 = await api.GetWithdrawalsAsync();
+        var a19 = await api.GetDepositsAsync();
+        var a20 = await api.GetDepositAddressAsync();
+        var a21 = await api.CreateListenKeyAsync();
+        var a22 = await api.ExtendListenKeyAsync(a21.Data);
+        var a23 = await api.CloseListenKeyAsync(a21.Data);
         #endregion
 
         #region WebSocket API Client Examples
@@ -80,7 +81,7 @@ internal class Program
             Console.WriteLine($"A:{data.Asks.Count} B:{data.Bids.Count} U:{data.LastUpdateId}");
         });
 
-        await ws.SubscribeToUserStreamAsync(a20.Data, (data) =>
+        await ws.SubscribeToUserStreamAsync(a21.Data, (data) =>
         {
             Console.WriteLine($"On Balance Update: Asset:{data.Asset} Free:{data.Free} Locked:{data.Locked}");
         }, (data) =>

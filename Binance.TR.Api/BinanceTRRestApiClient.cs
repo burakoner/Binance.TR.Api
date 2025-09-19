@@ -1,15 +1,20 @@
 ﻿namespace Binance.TR.Api;
 
+/// <summary>
+/// Binance TR Rest API Client
+/// </summary>
 public class BinanceTRRestApiClient : RestApiClient
 {
     /// <summary>
     /// Use to override Default Rest Api Address
     /// </summary>
     public string MeRestApiAddress { get; set; } = string.Empty;
+
     /// <summary>
     /// Use to override Default Rest Api Address
     /// </summary>
     public string TrRestApiAddress { get; set; } = string.Empty;
+
     /// <summary>
     /// Use to override Default 2meta Rest Api Address
     /// </summary>
@@ -281,7 +286,7 @@ public class BinanceTRRestApiClient : RestApiClient
         return result;
     }
 
-    public async Task<RestCallResult<BinanceTROrderId>> PlaceOrderAsync(
+    public async Task<RestCallResult<BinanceTROrder>> PlaceOrderAsync(
         string symbol,
         OrderSide side,
         OrderType type,
@@ -291,6 +296,7 @@ public class BinanceTRRestApiClient : RestApiClient
         decimal? price = null,
         decimal? stopPrice = null,
         string clientOrderId = null,
+        TimeInForce? timeInForce = null,
         CancellationToken ct = default)
     {
         // ExchangeInfo Symbol
@@ -307,9 +313,10 @@ public class BinanceTRRestApiClient : RestApiClient
         parameters.AddOptional("price", price);
         parameters.AddOptional("stopPrice", stopPrice);
         parameters.AddOptional("clientId", clientOrderId);
+        parameters.AddOptionalEnum("timeInForce", timeInForce);
 
         // Do Request
-        return await PayloadRequestAsync<BinanceTROrderId>(BuildUri(BinanceDataCenter.TR, "open/v1/orders"), HttpMethod.Post, ct, true, null, parameters);
+        return await PayloadRequestAsync<BinanceTROrder>(BuildUri(BinanceDataCenter.TR, "open/v1/orders"), HttpMethod.Post, ct, true, null, parameters);
     }
 
     public Task<RestCallResult<BinanceTROrder>> GetOrderAsync(long orderId, CancellationToken ct = default)
@@ -333,7 +340,7 @@ public class BinanceTRRestApiClient : RestApiClient
     }
 
     public async Task<RestCallResult<List<BinanceTROrder>>> GetOrdersAsync(
-        string symbol,
+        string symbol = null,
         OrderSide? side = null,
         OrderQuery? type = null,
         QueryDirection? direction = null,
@@ -344,16 +351,53 @@ public class BinanceTRRestApiClient : RestApiClient
         CancellationToken ct = default)
     {
         // ExchangeInfo Symbol
-        symbol = await GetExchangeInfoSymbol(symbol, ct);
+        if (!string.IsNullOrEmpty(symbol))
+            symbol = await GetExchangeInfoSymbol(symbol, ct);
 
         // Validations
         limit.ValidateIntBetween(nameof(limit), 1, 1000);
 
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("symbol", symbol);
+        parameters.AddOptional("symbol", symbol);
         parameters.AddOptionalEnum("side", side);
         parameters.AddOptionalEnum("type", type);
+        parameters.AddOptionalEnum("direct", direction);
+        parameters.AddOptional("startTime", startTime?.ConvertToMilliseconds());
+        parameters.AddOptional("endTime", endTime?.ConvertToMilliseconds());
+        parameters.AddOptional("fromId", fromId);
+        parameters.AddOptional("limit", limit);
+
+        // Do Request
+        var result = await PayloadRequestAsync<BinanceTRRestApiListResponse<BinanceTROrder>>(BuildUri(BinanceDataCenter.TR, "open/v1/orders"), HttpMethod.Get, ct, true, parameters).ConfigureAwait(false);
+        if (!result) return result.AsError<List<BinanceTROrder>>(result.Error);
+
+        // Return
+        return result.As(result.Data.List);
+    }
+
+    public async Task<RestCallResult<List<BinanceTROrder>>> GetOpenOrdersAsync(
+        string symbol = null,
+        OrderSide? side = null,
+        QueryDirection? direction = null,
+        long? fromId = null,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int limit = 500,
+        CancellationToken ct = default)
+    {
+        // ExchangeInfo Symbol
+        if (!string.IsNullOrEmpty(symbol))
+            symbol = await GetExchangeInfoSymbol(symbol, ct);
+
+        // Validations
+        limit.ValidateIntBetween(nameof(limit), 1, 1000);
+
+        // Parameters
+        var parameters = new ParameterCollection();
+        parameters.AddOptional("symbol", symbol);
+        parameters.AddOptionalEnum("side", side);
+        parameters.AddOptionalEnum("type", OrderQuery.Open);
         parameters.AddOptionalEnum("direct", direction);
         parameters.AddOptional("startTime", startTime?.ConvertToMilliseconds());
         parameters.AddOptional("endTime", endTime?.ConvertToMilliseconds());
