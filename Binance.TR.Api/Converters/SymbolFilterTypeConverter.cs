@@ -14,7 +14,9 @@ internal class SymbolFilterTypeConverter : BaseConverter<SymbolFilterType>
         new(SymbolFilterType.TrailingDelta, "TRAILING_DELTA"),
         new(SymbolFilterType.PercentPriceBySide, "PERCENT_PRICE_BY_SIDE"),
         new(SymbolFilterType.Notional, "NOTIONAL"),
-        new(SymbolFilterType.MaxNumberOrders, "MAX_NUM_ORDERS"),
-        new(SymbolFilterType.MaxNumberAlgorithmicOrders, "MAX_NUM_ALGO_ORDERS"),
+        new(SymbolFilterType.MaxNumberOfOrders, "MAX_NUM_ORDERS"),
+        new(SymbolFilterType.MaxNumberOfAlgorithmicOrders, "MAX_NUM_ALGO_ORDERS"),
+        new(SymbolFilterType.MaxNumberOfOrderLists, "MAX_NUM_ORDER_LISTS"),
+        new(SymbolFilterType.MaxNumberOfOrderAmends, "MAX_NUM_ORDER_AMENDS"),
     ];
 }

@@ -58,4 +58,10 @@ public record BinanceTRSymbol
 
     [JsonIgnore]
     public BinanceSymbolMaxAlgorithmicOrdersFilter MaxAlgorithmicOrdersFilter => Filters.OfType<BinanceSymbolMaxAlgorithmicOrdersFilter>().FirstOrDefault();
+
+    [JsonIgnore]
+    public BinanceSymbolMaxOrderListsFilter MaxOrderListsFilter => Filters.OfType<BinanceSymbolMaxOrderListsFilter>().FirstOrDefault();
+
+    [JsonIgnore]
+    public BinanceSymbolMaxOrderAmendsFilter MaxOrderAmendsFilter => Filters.OfType<BinanceSymbolMaxOrderAmendsFilter>().FirstOrDefault();
 }

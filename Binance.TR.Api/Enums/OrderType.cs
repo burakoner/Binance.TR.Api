@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace Binance.TR.Api.Enums;
+﻿namespace Binance.TR.Api.Enums;
 
 /// <summary>
 /// The type of an order

@@ -21,7 +21,8 @@ internal class SymbolFilterConverter : JsonConverter
                 {
                     MaxPrice = (decimal)obj["maxPrice"],
                     MinPrice = (decimal)obj["minPrice"],
-                    TickSize = (decimal)obj["tickSize"]
+                    TickSize = (decimal)obj["tickSize"],
+                    ApplyToMarket = (bool)obj["applyToMarket"]
                 };
                 break;
 
@@ -30,14 +31,16 @@ internal class SymbolFilterConverter : JsonConverter
                 {
                     MaxQuantity = (decimal)obj["maxQty"],
                     MinQuantity = (decimal)obj["minQty"],
-                    StepSize = (decimal)obj["stepSize"]
+                    StepSize = (decimal)obj["stepSize"],
+                    ApplyToMarket = (bool)obj["applyToMarket"]
                 };
                 break;
 
             case SymbolFilterType.IcebergParts:
                 result = new BinanceSymbolIcebergPartsFilter
                 {
-                    Limit = (int)obj["limit"]
+                    Limit = (int)obj["limit"],
+                    ApplyToMarket = (bool)obj["applyToMarket"]
                 };
                 break;
 
@@ -46,13 +49,15 @@ internal class SymbolFilterConverter : JsonConverter
                 {
                     MaxQuantity = (decimal)obj["maxQty"],
                     MinQuantity = (decimal)obj["minQty"],
-                    StepSize = (decimal)obj["stepSize"]
+                    StepSize = (decimal)obj["stepSize"],
+                    ApplyToMarket = (bool)obj["applyToMarket"]
                 };
                 break;
 
             case SymbolFilterType.TrailingDelta:
                 result = new BinanceSymbolTrailingDeltaFilter
                 {
+                    ApplyToMarket = (bool)obj["applyToMarket"]
                 };
                 break;
 
@@ -63,7 +68,8 @@ internal class SymbolFilterConverter : JsonConverter
                     BidMultiplierDown = (decimal)obj["bidMultiplierDown"],
                     AskMultiplierUp = (decimal)obj["askMultiplierUp"],
                     AskMultiplierDown = (decimal)obj["askMultiplierDown"],
-                    AveragePriceMinutes = (int)obj["avgPriceMins"]
+                    AveragePriceMinutes = (int)obj["avgPriceMins"],
+                    ApplyToMarket = (bool)obj["applyToMarket"]
                 };
                 break;
 
@@ -71,20 +77,37 @@ internal class SymbolFilterConverter : JsonConverter
                 result = new BinanceSymbolNotionalFilter
                 {
                     MinNotional = (decimal)obj["minNotional"],
-                    AveragePriceMinutes = (int)obj["avgPriceMins"]
+                    AveragePriceMinutes = (int)obj["avgPriceMins"],
+                    ApplyToMarket = (bool)obj["applyToMarket"]
                 };
                 break;
 
-            case SymbolFilterType.MaxNumberOrders:
+            case SymbolFilterType.MaxNumberOfOrders:
                 result = new BinanceSymbolMaxOrdersFilter
                 {
+                    ApplyToMarket = (bool)obj["applyToMarket"]
                 };
                 break;
                 
-            case SymbolFilterType.MaxNumberAlgorithmicOrders:
+            case SymbolFilterType.MaxNumberOfAlgorithmicOrders:
                 result = new BinanceSymbolMaxAlgorithmicOrdersFilter
                 {
-                    MaxNumberAlgorithmicOrders = (int)obj["maxNumAlgoOrders"]
+                    MaxNumberAlgorithmicOrders = (int)obj["maxNumAlgoOrders"],
+                    ApplyToMarket = (bool)obj["applyToMarket"]
+                };
+                break;
+
+            case SymbolFilterType.MaxNumberOfOrderLists:
+                result = new BinanceSymbolMaxOrderListsFilter
+                {
+                    ApplyToMarket = (bool)obj["applyToMarket"]
+                };
+                break;
+
+            case SymbolFilterType.MaxNumberOfOrderAmends:
+                result = new BinanceSymbolMaxOrderAmendsFilter
+                {
+                    ApplyToMarket = (bool)obj["applyToMarket"]
                 };
                 break;
 
@@ -167,13 +190,20 @@ internal class SymbolFilterConverter : JsonConverter
                 writer.WritePropertyName("avgPriceMins");
                 writer.WriteValue(minNotionalFilter.AveragePriceMinutes);
                 break;
-            case SymbolFilterType.MaxNumberOrders:
+            case SymbolFilterType.MaxNumberOfOrders:
                 var maxOrdersFilter = (BinanceSymbolMaxOrdersFilter)filter;
                 break;
-            case SymbolFilterType.MaxNumberAlgorithmicOrders:
+            case SymbolFilterType.MaxNumberOfAlgorithmicOrders:
                 var maxAlgorithmicOrdersFilter = (BinanceSymbolMaxAlgorithmicOrdersFilter)filter;
                 writer.WritePropertyName("maxNumAlgoOrders");
                 writer.WriteValue(maxAlgorithmicOrdersFilter.MaxNumberAlgorithmicOrders);
+                break;
+
+            case SymbolFilterType.MaxNumberOfOrderLists:
+                var maxOrderListsFilter = (BinanceSymbolMaxOrderListsFilter)filter;
+                break;
+            case SymbolFilterType.MaxNumberOfOrderAmends:
+                var maxOrderAmendsFilter = (BinanceSymbolMaxOrderAmendsFilter)filter;
                 break;
             default:
                 Debug.WriteLine("Can't write symbol filter of type: " + filter.FilterType);

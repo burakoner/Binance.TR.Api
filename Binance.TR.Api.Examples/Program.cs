@@ -85,7 +85,7 @@ internal class Program
             Console.WriteLine($"On Balance Update: Asset:{data.Asset} Free:{data.Free} Locked:{data.Locked}");
         }, (data) =>
         {
-            Console.WriteLine($"On Order Update: Symbol:{data.Symbol} OrderId:{data.OrderId} ClientOrderId:{data.ClientOrderId} Side:{data.Side} Type:{data.Type} TimeInForce:{data.TimeInForce} Quantity:{data.Quantity} Price:{data.Price} StopPrice:{data.StopPrice}");
+            // Console.WriteLine($"On Order Update: Symbol:{data.Symbol} OrderId:{data.OrderId} ClientOrderId:{data.ClientOrderId} Side:{data.Side} Type:{data.Type} TimeInForce:{data.TimeInForce} Quantity:{data.Quantity} Price:{data.Price} StopPrice:{data.StopPrice}");
         });
         #endregion
 

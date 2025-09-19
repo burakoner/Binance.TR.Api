@@ -98,3 +98,14 @@ public record BinanceSymbolMaxAlgorithmicOrdersFilter : BinanceTRSymbolFilter
     [JsonProperty("maxNumAlgoOrders")]
     public int MaxNumberAlgorithmicOrders { get; set; }
 }
+
+public record BinanceSymbolMaxOrderListsFilter : BinanceTRSymbolFilter
+{
+}
+
+
+
+public record BinanceSymbolMaxOrderAmendsFilter : BinanceTRSymbolFilter
+{
+}
+

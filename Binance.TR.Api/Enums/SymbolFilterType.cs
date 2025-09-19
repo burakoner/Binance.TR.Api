@@ -51,12 +51,23 @@ public enum SymbolFilterType
     /// MaxNumberOrders filter
     /// </summary>
     [Map("MAX_NUM_ORDERS")]
-    MaxNumberOrders = 8,
+    MaxNumberOfOrders = 8,
 
     /// <summary>
     /// Max algo orders filter
     /// </summary>
     [Map("MAX_NUM_ALGO_ORDERS")]
-    MaxNumberAlgorithmicOrders = 9,
+    MaxNumberOfAlgorithmicOrders = 9,
 
+    /// <summary>
+    /// Max number of order lists filter
+    /// </summary>
+    [Map("MAX_NUM_ALGO_ORDERS")]
+    MaxNumberOfOrderLists = 10,
+
+    /// <summary>
+    /// Max number of order amends filter
+    /// </summary>
+    [Map("MAX_NUM_ALGO_ORDERS")]
+    MaxNumberOfOrderAmends = 11,
 }
