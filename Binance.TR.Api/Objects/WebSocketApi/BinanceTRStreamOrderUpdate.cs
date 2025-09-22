@@ -12,6 +12,18 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     public string Symbol { get; set; }
 
     /// <summary>
+    /// The id of the order as assigned by Binance
+    /// </summary>
+    [JsonProperty("c")]
+    public string OrderId { get; set; }
+
+    ///// <summary>
+    ///// The new client order id
+    ///// </summary>
+    //[JsonProperty("c")]
+    //public string ClientOrderId { get; set; }
+
+    /// <summary>
     /// The side of the order
     /// </summary>
     [JsonProperty("S"), JsonConverter(typeof(MapConverter))]
@@ -57,10 +69,10 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     //public long Ignore { get; set; }
 
     /// <summary>
-    /// The id of the order as assigned by Binance
+    /// The original client order id
     /// </summary>
     [JsonProperty("C")]
-    public long? OrderId { get; set; }
+    public string OriginalClientOrderId { get; set; }
 
     /// <summary>
     /// The execution type
@@ -126,10 +138,13 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     /// The trade id
     /// </summary>
     [JsonProperty("t")]
-    public long TradeId { get; set; }
+    public long? TradeId { get; set; }
 
-    //[JsonProperty("I")]
-    //public long Ignore { get; set; }
+    /// <summary>
+    /// The ignore id
+    /// </summary>
+    [JsonProperty("I")]
+    public long IgnoreId { get; set; }
 
     /// <summary>
     /// Is working
@@ -159,16 +174,16 @@ public record BinanceTRStreamOrderUpdate : BinanceTRStreamEvent
     public decimal QuoteQuantityFilled { get; set; }
 
     /// <summary>
-    /// Last quote asset transacted quantity (i.e. LastPrice * LastQuantity)
-    /// </summary>
-    [JsonProperty("Y")]
-    public decimal LastQuoteQuantityFilled { get; set; }
-
-    /// <summary>
-    /// Quote order quantity (???)
+    /// Quote order quantity
     /// </summary>
     [JsonProperty("Q")]
     public decimal QuoteQuantity { get; set; }
+
+    /// <summary>
+    /// Last quote asset transacted quantity (i.e. LastPrice * LastQuantity)
+    /// </summary>
+    [JsonProperty("Y")]
+    public decimal LastQuoteQuantity { get; set; }
 
     /// <summary>
     /// Working time; when it entered the order book

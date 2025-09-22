@@ -6,7 +6,7 @@
 public record BinanceTROrder
 {
     [JsonProperty("orderId")]
-    public long OrderId { get; set; }
+    public string OrderId { get; set; }
 
     [JsonProperty("clientId")]
     public string ClientOrderId { get; set; }
@@ -64,4 +64,7 @@ public record BinanceTROrder
 
     [JsonProperty("borderListId")]
     public long? BinanceOrderListId { get; set; }
+
+    [JsonProperty("orderListId")]
+    public string OrderListId { get; set; }
 }
