@@ -83,6 +83,9 @@ public record BinanceTRStreamKline
     [JsonProperty("l")]
     public decimal Low { get; set; }
 
+    /// <summary>
+    /// Base asset volume
+    /// </summary>
     [JsonProperty("v")]
     public decimal BaseVolume { get; set; }
 
@@ -98,17 +101,26 @@ public record BinanceTRStreamKline
     [JsonProperty("x")]
     public bool Final { get; set; }
 
+    /// <summary>
+    /// Quote asset volume
+    /// </summary>
     [JsonProperty("q")]
     public decimal QuoteVolume { get; set; }
 
+    /// <summary>
+    /// Taker buy base asset volume
+    /// </summary>
     [JsonProperty("V")]
     public decimal TakerBuyBaseVolume { get; set; }
 
+    /// <summary>
+    /// Taker buy quote asset volume
+    /// </summary>
     [JsonProperty("Q")]
     public decimal TakerBuyQuoteVolume { get; set; }
 
-    [JsonProperty("B")]
-    public decimal? Ignore { get; set; }
+    //[JsonProperty("B")]
+    //public decimal? Ignore { get; set; }
 
     /// <summary>
     /// Casts this object to a <see cref="BinanceTRKline"/> object

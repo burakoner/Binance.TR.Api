@@ -1,5 +1,8 @@
 ﻿namespace Binance.TR.Api.Objects.WebSocketApi;
 
+/// <summary>
+/// Binance TR Account Update Stream Event
+/// </summary>
 public record BinanceTRStreamAccountUpdate : BinanceTRStreamEvent
 {
     // Bu alanlar API Docs'ta olmasına rağmen dönen yanıtta yoklar.
@@ -30,18 +33,33 @@ public record BinanceTRStreamAccountUpdate : BinanceTRStreamEvent
     //[JsonProperty("status"), JsonConverter(typeof(BooleanConverter))]
     //public bool Status { get; set; }
 
+    /// <summary>
+    /// Balances
+    /// </summary>
     [JsonProperty("B")]
     public List<BinanceTRStreamAccountUpdateBalance> Balances { get; set; }
 }
 
+/// <summary>
+/// Binance TR Account Update Balance
+/// </summary>
 public record BinanceTRStreamAccountUpdateBalance
 {
+    /// <summary>
+    /// Asset
+    /// </summary>
     [JsonProperty("a")]
     public string Asset { get; set; }
 
+    /// <summary>
+    /// Free
+    /// </summary>
     [JsonProperty("f")]
     public decimal Free { get; set; }
 
+    /// <summary>
+    /// Locked
+    /// </summary>
     [JsonProperty("l")]
     public decimal Locked { get; set; }
 }

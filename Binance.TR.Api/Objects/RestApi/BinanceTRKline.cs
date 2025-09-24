@@ -6,6 +6,9 @@
 [JsonConverter(typeof(ArrayConverter))]
 public record BinanceTRKline
 {
+    /// <summary>
+    /// Symbol the candlestick is for
+    /// </summary>
     [JsonIgnore]
     public string Symbol { get; set; }
     

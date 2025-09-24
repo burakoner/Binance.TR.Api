@@ -5,6 +5,9 @@
 /// </summary>
 public record BinanceTRTrade
 {
+    /// <summary>
+    /// Symbol the trade was for
+    /// </summary>
     [JsonIgnore]
     public string Symbol { get; set; }
 
@@ -38,9 +41,15 @@ public record BinanceTRTrade
     [JsonProperty("time"), JsonConverter(typeof(DateTimeConverter))]
     public DateTime TradeTime { get; set; }
 
+    /// <summary>
+    /// Indicates whether the buyer is the market maker
+    /// </summary>
     [JsonProperty("isBuyerMaker")]
     public bool IsBuyerMaker { get; set; }
 
+    /// <summary>
+    /// Indicates whether the trade was the best price match
+    /// </summary>
     [JsonProperty("isBestMatch")]
     public bool IsBestMatch { get; set; }
 }

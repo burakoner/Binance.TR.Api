@@ -5,6 +5,9 @@
 /// </summary>
 public record BinanceTRAggregatedTrade
 {
+    /// <summary>
+    /// Symbol the trade was for
+    /// </summary>
     [JsonIgnore]
     public string Symbol { get; set; }
 

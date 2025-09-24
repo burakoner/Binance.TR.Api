@@ -54,18 +54,22 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
     #endregion
 
     #region Overrided Methods
+    /// <inheritdoc/>
     protected override AuthenticationProvider CreateAuthenticationProvider(ApiCredentials credentials) => new BinanceTRAuthenticationProvider(credentials);
 
+    /// <inheritdoc/>
     protected override Task<CallResult<bool>> AuthenticateAsync(WebSocketConnection connection)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     protected override bool HandleQueryResponse<T>(WebSocketConnection connection, object request, JToken data, out CallResult<T> callResult)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     protected override bool HandleSubscriptionResponse(WebSocketConnection connection, WebSocketSubscription subscription, object request, JToken data, out CallResult<object> callResult)
     {
         callResult = null;
@@ -87,6 +91,7 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         return false;
     }
 
+    /// <inheritdoc/>
     protected override bool MessageMatchesHandler(WebSocketConnection connection, JToken data, object request)
     {
         // Ping Request
@@ -176,11 +181,13 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         return false;
     }
 
+    /// <inheritdoc/>
     protected override bool MessageMatchesHandler(WebSocketConnection connection, JToken message, string identifier)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     protected override async Task<bool> UnsubscribeAsync(WebSocketConnection connection, WebSocketSubscription subscription)
     {
         var bRequest = ((BinanceTRSocketRequest)subscription.Request!);
@@ -223,8 +230,23 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
     }
     #endregion
 
+    /// <summary>
+    /// Subscribe to trades
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTradesAsync(string symbol, Action<BinanceTRStreamTrade> handler, CancellationToken ct = default)
         => await SubscribeToTradesAsync([symbol], handler, ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// Subscribe to trades
+    /// </summary>
+    /// <param name="symbols">Symbols</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTradesAsync(IEnumerable<string> symbols, Action<BinanceTRStreamTrade> handler, CancellationToken ct = default)
     {
         // Internal Handler
@@ -252,8 +274,23 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         return subscription;
     }
 
+    /// <summary>
+    /// Subscribe to aggregated trades
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToAggregatedTradesAsync(string symbol, Action<BinanceTRStreamAggregatedTrade> handler, CancellationToken ct = default)
         => await SubscribeToAggregatedTradesAsync([symbol], handler, ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// Subscribe to aggregated trades
+    /// </summary>
+    /// <param name="symbols">Symbols</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToAggregatedTradesAsync(IEnumerable<string> symbols, Action<BinanceTRStreamAggregatedTrade> handler, CancellationToken ct = default)
     {
         // Internal Handler
@@ -281,8 +318,25 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         return subscription;
     }
 
+    /// <summary>
+    /// Subscribe to klines/candlesticks
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="interval">Interval</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToKlinesAsync(string symbol, KlineInterval interval, Action<BinanceTRStreamKline> handler, CancellationToken ct = default)
         => await SubscribeToKlinesAsync([symbol], interval, handler, ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// Subscribe to klines/candlesticks
+    /// </summary>
+    /// <param name="symbols">Symbols</param>
+    /// <param name="interval">Interval</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToKlinesAsync(IEnumerable<string> symbols, KlineInterval interval, Action<BinanceTRStreamKline> handler, CancellationToken ct = default)
     {
         // Internal Handler
@@ -310,8 +364,23 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         return subscription;
     }
 
+    /// <summary>
+    /// Subscribe to market tickers
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(string symbol, Action<BinanceTRStreamTicker> handler, CancellationToken ct = default)
         => await SubscribeToTickersAsync([symbol], handler, ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// Subscribe to market tickers
+    /// </summary>
+    /// <param name="symbols">Symbols</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(IEnumerable<string> symbols, Action<BinanceTRStreamTicker> handler, CancellationToken ct = default)
     {
         // Internal Handler
@@ -338,6 +407,13 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         // Return
         return subscription;
     }
+
+    /// <summary>
+    /// Subscribe to all market tickers
+    /// </summary>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(Action<BinanceTRStreamTicker> handler, CancellationToken ct = default)
     {
         // Internal Handler
@@ -369,8 +445,27 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         return subscription;
     }
 
+    /// <summary>
+    /// Subscribe to order book depth updates
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="level">Level</param>
+    /// <param name="speed">Speed</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToPartialDepthAsync(string symbol, int level, int speed, Action<BinanceTRStreamOrderBookPartial> handler, CancellationToken ct = default)
         => await SubscribeToPartialDepthAsync([symbol], level, speed, handler, ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// Subscribe to order book depth updates
+    /// </summary>
+    /// <param name="symbols">Symbols</param>
+    /// <param name="level">Level</param>
+    /// <param name="speed">Speed</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToPartialDepthAsync(IEnumerable<string> symbols, int level, int speed, Action<BinanceTRStreamOrderBookPartial> handler, CancellationToken ct = default)
     {
         // Validations
@@ -402,8 +497,25 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         return subscription;
     }
 
+    /// <summary>
+    /// Subscribe to order book depth updates
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="speed">Speed</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToDepthDiffAsync(string symbol, int speed, Action<BinanceTRStreamOrderBookDiff> handler, CancellationToken ct = default)
         => await SubscribeToDepthDiffAsync([symbol], speed, handler, ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// Subscribe to order book depth updates
+    /// </summary>
+    /// <param name="symbols">Symbols</param>
+    /// <param name="speed">Speed</param>
+    /// <param name="handler">Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToDepthDiffAsync(IEnumerable<string> symbols, int speed, Action<BinanceTRStreamOrderBookDiff> handler, CancellationToken ct = default)
     {
         // Validations
@@ -434,11 +546,15 @@ public class BinanceTRWebSocketApiClient : WebSocketApiClient
         return subscription;
     }
 
-    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToUserStreamAsync(
-        string listenKey,
-        Action<BinanceTRStreamAccountUpdateBalance> onBalanceUpdate,
-        Action<BinanceTRStreamOrderUpdate> onOrderUpdate,
-        CancellationToken ct = default)
+    /// <summary>
+    /// Subscribe to user data stream
+    /// </summary>
+    /// <param name="listenKey">Listen Key</param>
+    /// <param name="onBalanceUpdate">Balance Update Data Handler</param>
+    /// <param name="onOrderUpdate">Order Update Data Handler</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
+    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToUserStreamAsync(string listenKey, Action<BinanceTRStreamAccountUpdateBalance> onBalanceUpdate, Action<BinanceTRStreamOrderUpdate> onOrderUpdate, CancellationToken ct = default)
     {
         // Internal Handler
         // var internalHandler = new Action<WebSocketDataEvent<BinanceTRStreamEvent>>(data =>

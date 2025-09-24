@@ -26,7 +26,16 @@ public class BinanceTRRestApiClient : RestApiClient
     internal Dictionary<string, BinanceTRSymbol> NormalizedSymbols { get; private set; } = [];
     internal ILogger Logger { get => _logger; }
 
+    /// <summary>
+    /// Binance TR Rest API Client
+    /// </summary>
     public BinanceTRRestApiClient() : this(new BinanceTRRestApiOptions(), null) { }
+
+    /// <summary>
+    /// Binance TR Rest API Client
+    /// </summary>
+    /// <param name="options">Client Options</param>
+    /// <param name="logger">Logger</param>
     public BinanceTRRestApiClient(BinanceTRRestApiOptions options, ILogger logger = null) : base(logger, options)
     {
         ManualParseError = true;
@@ -35,10 +44,15 @@ public class BinanceTRRestApiClient : RestApiClient
     }
 
     #region Overrides
+    /// <inheritdoc/>
     protected override AuthenticationProvider CreateAuthenticationProvider(ApiCredentials credentials) => new BinanceTRAuthenticationProvider(credentials);
+    /// <inheritdoc/>
     protected override Task<RestCallResult<DateTime>> GetServerTimestampAsync() => this.GetTimeAsync();
+    /// <inheritdoc/>
     protected override TimeSyncInfo GetTimeSyncInfo() => new(Logger, Options.AutoTimestamp, Options.AutoTimestampInterval, TimeSyncState);
+    /// <inheritdoc/>
     protected override TimeSpan GetTimeOffset() => TimeSyncState.TimeOffset;
+    /// <inheritdoc/>
     protected override Error ParseErrorResponse(JToken error)
     {
         if (!error.HasValues)
@@ -49,6 +63,7 @@ public class BinanceTRRestApiClient : RestApiClient
 
         return new ServerError((int)error["code"]!, (string)error["msg"]!, error.ToString());
     }
+    /// <inheritdoc/>
     protected override Task<ServerError> TryParseErrorAsync(JToken error)
     {
         if (!error.HasValues)
@@ -65,6 +80,22 @@ public class BinanceTRRestApiClient : RestApiClient
     #endregion
 
     #region Protected Methods
+    /// <summary>
+    /// Request
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="uri"></param>
+    /// <param name="method"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="signed"></param>
+    /// <param name="queryParameters"></param>
+    /// <param name="bodyParameters"></param>
+    /// <param name="headerParameters"></param>
+    /// <param name="arraySerialization"></param>
+    /// <param name="deserializer"></param>
+    /// <param name="ignoreRatelimit"></param>
+    /// <param name="requestWeight"></param>
+    /// <returns></returns>
     protected async Task<RestCallResult<T>> RequestAsync<T>(Uri uri, HttpMethod method, CancellationToken cancellationToken, bool signed = false, ParameterCollection queryParameters = null, ParameterCollection bodyParameters = null, Dictionary<string, string> headerParameters = null, ArraySerialization? arraySerialization = null, JsonSerializer deserializer = null, bool ignoreRatelimit = false, int requestWeight = 1)
     {
         // Get Original Cultures
@@ -86,6 +117,23 @@ public class BinanceTRRestApiClient : RestApiClient
         if (!result.Success || result.Data == null) return new RestCallResult<T>(result.Request, result.Response, result.Raw, result.Error);
         return new RestCallResult<T>(result.Request, result.Response, result.Data, result.Raw, result.Error);
     }
+
+    /// <summary>
+    /// Payload Request
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="uri"></param>
+    /// <param name="method"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="signed"></param>
+    /// <param name="queryParameters"></param>
+    /// <param name="bodyParameters"></param>
+    /// <param name="headerParameters"></param>
+    /// <param name="arraySerialization"></param>
+    /// <param name="deserializer"></param>
+    /// <param name="ignoreRatelimit"></param>
+    /// <param name="requestWeight"></param>
+    /// <returns></returns>
     protected async Task<RestCallResult<T>> PayloadRequestAsync<T>(Uri uri, HttpMethod method, CancellationToken cancellationToken, bool signed = false, ParameterCollection queryParameters = null, ParameterCollection bodyParameters = null, Dictionary<string, string> headerParameters = null, ArraySerialization? arraySerialization = null, JsonSerializer deserializer = null, bool ignoreRatelimit = false, int requestWeight = 1)
     {
         // Get Original Cultures
@@ -108,6 +156,13 @@ public class BinanceTRRestApiClient : RestApiClient
         if (result.Data.Code != 0) return new RestCallResult<T>(result.Request, result.Response, result.Raw, new ServerError(result.Data.Code, result.Data.Message));
         return new RestCallResult<T>(result.Request, result.Response, result.Data.Payload, result.Raw, result.Error);
     }
+
+    /// <summary>
+    /// Build Uri
+    /// </summary>
+    /// <param name="datacenter">Binance Data Center</param>
+    /// <param name="parameters">URL Path Items</param>
+    /// <returns></returns>
     protected Uri BuildUri(BinanceDataCenter datacenter, params string[] parameters)
     {
         var baseAddress = "";
@@ -120,10 +175,20 @@ public class BinanceTRRestApiClient : RestApiClient
     #endregion
 
     #region Public Methods
+    /// <summary>
+    /// Set API Credentials
+    /// </summary>
+    /// <param name="key">API Key</param>
+    /// <param name="secret">API Secret</param>
     public void SetApiCredentials(string key, string secret) => base.SetApiCredentials(new ApiCredentials(key, secret));
     #endregion
 
     #region Rest API Methods
+    /// <summary>
+    /// Get Server Time
+    /// </summary>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<DateTime>> GetTimeAsync(CancellationToken ct = default)
     {
         var result = await RequestAsync<BinanceTRTime>(BuildUri(BinanceDataCenter.TR, "open/v1/common/time"), HttpMethod.Get, ct).ConfigureAwait(false);
@@ -131,6 +196,11 @@ public class BinanceTRRestApiClient : RestApiClient
         return result.As(result.Data.Time);
     }
 
+    /// <summary>
+    /// Get Exchange Information
+    /// </summary>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<List<BinanceTRSymbol>>> GetSymbolsAsync(CancellationToken ct = default)
     {
         var result = await PayloadRequestAsync<BinanceTRRestApiListResponse<BinanceTRSymbol>>(BuildUri(BinanceDataCenter.TR, "open/v1/common/symbols"), HttpMethod.Get, ct).ConfigureAwait(false);
@@ -162,6 +232,13 @@ public class BinanceTRRestApiClient : RestApiClient
         return sym != null ? sym.Symbol : symbol;
     }
 
+    /// <summary>
+    /// Get Order Book
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="limit">Limit</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<BinanceTROrderBook>> GetOrderBookAsync(string symbol, int limit = 100, CancellationToken ct = default)
     {
         // Normalized Symbol
@@ -172,7 +249,7 @@ public class BinanceTRRestApiClient : RestApiClient
 
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("symbol", symbol);
+        parameters.AddParameter("symbol", symbol);
         parameters.AddOptional("limit", limit);
 
         // Get Uri
@@ -192,6 +269,14 @@ public class BinanceTRRestApiClient : RestApiClient
         return result.As(result.Data);
     }
 
+    /// <summary>
+    /// Get Recent Trades
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="fromId">From ID</param>
+    /// <param name="limit">Limit</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<List<BinanceTRTrade>>> GetTradesAsync(string symbol, long? fromId = null, int limit = 500, CancellationToken ct = default)
     {
         // Normalized Symbol
@@ -202,7 +287,7 @@ public class BinanceTRRestApiClient : RestApiClient
 
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("symbol", symbol);
+        parameters.AddParameter("symbol", symbol);
         parameters.AddOptional("fromId", fromId);
         parameters.AddOptional("limit", limit);
 
@@ -222,6 +307,16 @@ public class BinanceTRRestApiClient : RestApiClient
         return result;
     }
 
+    /// <summary>
+    /// Get Aggregated Trades
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="fromId">From ID</param>
+    /// <param name="startTime">Start Time</param>
+    /// <param name="endTime">End Time</param>
+    /// <param name="limit">Limit</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<List<BinanceTRAggregatedTrade>>> GetAggregatedTradesAsync(string symbol, long? fromId = null, DateTime? startTime = null, DateTime? endTime = null, int limit = 500, CancellationToken ct = default)
     {
         // Normalized Symbol
@@ -232,7 +327,7 @@ public class BinanceTRRestApiClient : RestApiClient
 
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("symbol", symbol);
+        parameters.AddParameter("symbol", symbol);
         parameters.AddOptional("fromId", fromId);
         parameters.AddOptional("startTime", startTime?.ConvertToMilliseconds());
         parameters.AddOptional("endTime", endTime?.ConvertToMilliseconds());
@@ -254,6 +349,16 @@ public class BinanceTRRestApiClient : RestApiClient
         return result;
     }
 
+    /// <summary>
+    /// Get Klines
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="interval">Interval</param>
+    /// <param name="startTime">Start Time</param>
+    /// <param name="endTime">End Time</param>
+    /// <param name="limit">Limit</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<List<BinanceTRKline>>> GetKlinesAsync(string symbol, KlineInterval interval, DateTime? startTime = null, DateTime? endTime = null, int limit = 500, CancellationToken ct = default)
     {
         // Normalized Symbol
@@ -264,7 +369,7 @@ public class BinanceTRRestApiClient : RestApiClient
 
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("symbol", symbol);
+        parameters.AddParameter("symbol", symbol);
         parameters.AddEnum("interval", interval);
         parameters.AddOptional("startTime", startTime?.ConvertToMilliseconds());
         parameters.AddOptional("endTime", endTime?.ConvertToMilliseconds());
@@ -286,6 +391,21 @@ public class BinanceTRRestApiClient : RestApiClient
         return result;
     }
 
+    /// <summary>
+    /// Place Order
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="side">Order Side</param>
+    /// <param name="type">Order Type</param>
+    /// <param name="quantity">Base Quantity</param>
+    /// <param name="quoteQuantity">Quote Quantity</param>
+    /// <param name="icebergQuantity">Iceberg Quantity</param>
+    /// <param name="price">Price</param>
+    /// <param name="stopPrice">Stop Price</param>
+    /// <param name="clientOrderId">Client Order Id</param>
+    /// <param name="timeInForce">Time In Force</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<BinanceTROrder>> PlaceOrderAsync(
         string symbol,
         OrderSide side,
@@ -304,7 +424,7 @@ public class BinanceTRRestApiClient : RestApiClient
 
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("symbol", symbol);
+        parameters.AddParameter("symbol", symbol);
         parameters.AddEnum("side", side);
         parameters.AddEnum("type", type);
         parameters.AddOptional("quantity", quantity);
@@ -319,26 +439,51 @@ public class BinanceTRRestApiClient : RestApiClient
         return await PayloadRequestAsync<BinanceTROrder>(BuildUri(BinanceDataCenter.TR, "open/v1/orders"), HttpMethod.Post, ct, true, null, parameters);
     }
 
+    /// <summary>
+    /// Get Order
+    /// </summary>
+    /// <param name="orderId">Order Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public Task<RestCallResult<BinanceTROrder>> GetOrderAsync(long orderId, CancellationToken ct = default)
     {
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("orderId", orderId);
+        parameters.AddParameter("orderId", orderId);
 
         // Do Request
         return PayloadRequestAsync<BinanceTROrder>(BuildUri(BinanceDataCenter.TR, "open/v1/orders/detail"), HttpMethod.Get, ct, true, parameters);
     }
 
+    /// <summary>
+    /// Cancel Order
+    /// </summary>
+    /// <param name="orderId">Order Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public Task<RestCallResult<BinanceTROrder>> CancelOrderAsync(long orderId, CancellationToken ct = default)
     {
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("orderId", orderId);
+        parameters.AddParameter("orderId", orderId);
 
         // Do Request
         return PayloadRequestAsync<BinanceTROrder>(BuildUri(BinanceDataCenter.TR, "open/v1/orders/cancel"), HttpMethod.Post, ct, true, parameters);
     }
 
+    /// <summary>
+    /// Get Orders
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="side">Order Side</param>
+    /// <param name="type">Order Query Type</param>
+    /// <param name="direction">Direction</param>
+    /// <param name="fromId">From ID</param>
+    /// <param name="startTime">Start Time</param>
+    /// <param name="endTime">End Time</param>
+    /// <param name="limit">Limit</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<List<BinanceTROrder>>> GetOrdersAsync(
         string symbol = null,
         OrderSide? side = null,
@@ -376,6 +521,18 @@ public class BinanceTRRestApiClient : RestApiClient
         return result.As(result.Data.List);
     }
 
+    /// <summary>
+    /// Get Open Orders
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="side">Order Side</param>
+    /// <param name="direction">Direction</param>
+    /// <param name="fromId">From ID</param>
+    /// <param name="startTime">Start Time</param>
+    /// <param name="endTime">End Time</param>
+    /// <param name="limit">Limit</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<List<BinanceTROrder>>> GetOpenOrdersAsync(
         string symbol = null,
         OrderSide? side = null,
@@ -412,6 +569,20 @@ public class BinanceTRRestApiClient : RestApiClient
         return result.As(result.Data.List);
     }
 
+    /// <summary>
+    /// Place OCO Order
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="side">Order Side</param>
+    /// <param name="quantity">Quantity</param>
+    /// <param name="price">Price</param>
+    /// <param name="stopPrice">Stop Price</param>
+    /// <param name="stopLimitPrice">Stop Limit Price</param>
+    /// <param name="stopClientOrderId">Stop Client Order Id</param>
+    /// <param name="listClientOrderId">List Client Order Id</param>
+    /// <param name="limitClientOrderId">Limit Client Order Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<BinanceTROrderId>> PlaceOcoOrderAsync(
         string symbol,
         OrderSide side,
@@ -429,12 +600,12 @@ public class BinanceTRRestApiClient : RestApiClient
 
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("symbol", symbol);
+        parameters.AddParameter("symbol", symbol);
         parameters.AddEnum("side", side);
-        parameters.Add("quantity", quantity);
-        parameters.Add("price", price);
-        parameters.Add("stopPrice", stopPrice);
-        parameters.Add("stopLimitPrice", stopLimitPrice);
+        parameters.AddParameter("quantity", quantity);
+        parameters.AddParameter("price", price);
+        parameters.AddParameter("stopPrice", stopPrice);
+        parameters.AddParameter("stopLimitPrice", stopLimitPrice);
         parameters.AddOptional("stopClientId", stopClientOrderId);
         parameters.AddOptional("listClientId", listClientOrderId);
         parameters.AddOptional("limitClientId", limitClientOrderId);
@@ -443,12 +614,22 @@ public class BinanceTRRestApiClient : RestApiClient
         return await PayloadRequestAsync<BinanceTROrderId>(BuildUri(BinanceDataCenter.TR, "open/v1/orders/oco"), HttpMethod.Post, ct, true, null, parameters);
     }
 
+    /// <summary>
+    /// Get Account Information
+    /// </summary>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public Task<RestCallResult<BinanceTRAccount>> GetAccountAsync(CancellationToken ct = default)
     {
         // Do Request
         return PayloadRequestAsync<BinanceTRAccount>(BuildUri(BinanceDataCenter.TR, "open/v1/account/spot"), HttpMethod.Get, ct, true);
     }
 
+    /// <summary>
+    /// Get Account Balances
+    /// </summary>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<List<BinanceTRAccountBalance>>> GetBalancesAsync(CancellationToken ct = default)
     {
         // Do Request
@@ -459,16 +640,34 @@ public class BinanceTRRestApiClient : RestApiClient
         return result.As(result.Data.Balances);
     }
 
+    /// <summary>
+    /// Get Account Balance
+    /// </summary>
+    /// <param name="asset">Asset</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public Task<RestCallResult<BinanceTRAccountBalance>> GetBalanceAsync(string asset, CancellationToken ct = default)
     {
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("asset", asset);
+        parameters.AddParameter("asset", asset);
 
         // Do Request
         return PayloadRequestAsync<BinanceTRAccountBalance>(BuildUri(BinanceDataCenter.TR, "open/v1/account/spot/asset"), HttpMethod.Get, ct, true);
     }
 
+    /// <summary>
+    /// Get Account Trades
+    /// </summary>
+    /// <param name="symbol">Symbol</param>
+    /// <param name="orderId">Order ID</param>
+    /// <param name="direction">Direction</param>
+    /// <param name="startTime">Start Time</param>
+    /// <param name="endTime">End Time</param>
+    /// <param name="fromId">From ID</param>
+    /// <param name="limit">Limit</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<List<BinanceTRAccountTrade>>> GetAccountTradesAsync(
         string symbol,
         long? orderId = null,
@@ -487,7 +686,7 @@ public class BinanceTRRestApiClient : RestApiClient
 
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("symbol", symbol);
+        parameters.AddParameter("symbol", symbol);
         parameters.AddOptional("orderId", orderId);
         parameters.AddOptionalEnum("direct", direction);
         parameters.AddOptional("startTime", startTime?.ConvertToMilliseconds());
@@ -503,6 +702,17 @@ public class BinanceTRRestApiClient : RestApiClient
         return result.As(result.Data.List);
     }
 
+    /// <summary>
+    /// Withdraw
+    /// </summary>
+    /// <param name="asset">Asset</param>
+    /// <param name="amount">Quantity</param>
+    /// <param name="address">Address</param>
+    /// <param name="addressTag">Tag/Memo</param>
+    /// <param name="network">Network</param>
+    /// <param name="clientWithdrawId">Client Withdraw Id</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public Task<RestCallResult<BinanceTRWithdrawalId>> WithdrawAsync(
         string asset,
         decimal amount,
@@ -514,9 +724,9 @@ public class BinanceTRRestApiClient : RestApiClient
     {
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("asset", asset);
-        parameters.Add("amount", amount);
-        parameters.Add("address", address);
+        parameters.AddParameter("asset", asset);
+        parameters.AddParameter("amount", amount);
+        parameters.AddParameter("address", address);
         parameters.AddOptional("addressTag", addressTag);
         parameters.AddOptional("network", network);
         parameters.AddOptional("clientId", clientWithdrawId);
@@ -525,6 +735,16 @@ public class BinanceTRRestApiClient : RestApiClient
         return PayloadRequestAsync<BinanceTRWithdrawalId>(BuildUri(BinanceDataCenter.TR, "open/v1/withdraws"), HttpMethod.Post, ct, true, parameters);
     }
 
+    /// <summary>
+    /// Get Withdrawals
+    /// </summary>
+    /// <param name="asset">Asset</param>
+    /// <param name="status">Status</param>
+    /// <param name="fromId">From Id</param>
+    /// <param name="startTime">Start Time</param>
+    /// <param name="endTime">End Time</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<List<BinanceTRWithdrawal>>> GetWithdrawalsAsync(
         string asset = null,
         WithdrawalStatus? status = null,
@@ -549,6 +769,16 @@ public class BinanceTRRestApiClient : RestApiClient
         return result.As(result.Data.List);
     }
 
+    /// <summary>
+    /// Get Deposits
+    /// </summary>
+    /// <param name="asset">Asset</param>
+    /// <param name="status">Status</param>
+    /// <param name="fromId">From Id</param>
+    /// <param name="startTime">Start Time</param>
+    /// <param name="endTime">End Time</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<List<BinanceTRDeposit>>> GetDepositsAsync(
         string asset = null,
         DepositStatus? status = null,
@@ -573,6 +803,13 @@ public class BinanceTRRestApiClient : RestApiClient
         return result.As(result.Data.List);
     }
 
+    /// <summary>
+    /// Get Deposit Address
+    /// </summary>
+    /// <param name="asset">Asset</param>
+    /// <param name="network">Network</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public Task<RestCallResult<BinanceTRDepositAddress>> GetDepositAddressAsync(
         string asset = null,
         string network = null,
@@ -580,13 +817,19 @@ public class BinanceTRRestApiClient : RestApiClient
     {
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("asset", asset);
-        parameters.Add("network", network);
+        parameters.AddParameter("asset", asset);
+        parameters.AddParameter("network", network);
 
         // Do Request
         return PayloadRequestAsync<BinanceTRDepositAddress>(BuildUri(BinanceDataCenter.TR, "open/v1/deposits/address"), HttpMethod.Get, ct, true, parameters);
     }
 
+    /// <summary>
+    /// Create Listen Key
+    /// </summary>
+    /// <param name="type">Symbol Type</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public Task<RestCallResult<string>> CreateListenKeyAsync(SymbolType type = SymbolType.Main, CancellationToken ct = default)
     {
         // Get Uri
@@ -598,11 +841,18 @@ public class BinanceTRRestApiClient : RestApiClient
         return PayloadRequestAsync<string>(uri, HttpMethod.Post, ct, true);
     }
 
+    /// <summary>
+    /// Extend Listen Key
+    /// </summary>
+    /// <param name="listenKey">Listen Key</param>
+    /// <param name="type">Symbol Type</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<bool>> ExtendListenKeyAsync(string listenKey, SymbolType type = SymbolType.Main, CancellationToken ct = default)
     {
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("listenKey", listenKey);
+        parameters.AddParameter("listenKey", listenKey);
 
         // Get Uri
         var uri = type == SymbolType.Main
@@ -617,11 +867,18 @@ public class BinanceTRRestApiClient : RestApiClient
         return result.As(true);
     }
 
+    /// <summary>
+    /// Close Listen Key
+    /// </summary>
+    /// <param name="listenKey">Listen Key</param>
+    /// <param name="type">Symbol Type</param>
+    /// <param name="ct">Cancellation Token</param>
+    /// <returns></returns>
     public async Task<RestCallResult<bool>> CloseListenKeyAsync(string listenKey, SymbolType type = SymbolType.Main, CancellationToken ct = default)
     {
         // Parameters
         var parameters = new ParameterCollection();
-        parameters.Add("listenKey", listenKey);
+        parameters.AddParameter("listenKey", listenKey);
 
         // Get Uri
         var uri = type == SymbolType.Main
